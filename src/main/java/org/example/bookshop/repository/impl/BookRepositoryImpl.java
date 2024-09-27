@@ -3,33 +3,46 @@ package org.example.bookshop.repository.impl;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.example.bookshop.exception.DataProcessingException;
 import org.example.bookshop.model.Book;
 import org.example.bookshop.repository.BookRepository;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 @Repository
+@RequiredArgsConstructor
 public class BookRepositoryImpl implements BookRepository {
     @PersistenceContext
-    private EntityManager entityManager;
+    private final EntityManager entityManager;
 
     @Override
-    @Transactional
     public Book save(Book book) {
+        Session session = null;
+        Transaction transaction = null;
         try {
-            entityManager.persist(book);
+            session = entityManager.unwrap(Session.class);
+            transaction = session.beginTransaction();
+            session.save(book);
+            transaction.commit();
             return book;
         } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
             throw new DataProcessingException("Can't add book: " + book, e);
+        } finally {
+            if (session != null) {
+                session.close();
+            }
         }
     }
 
     @Override
-    @Transactional
     public List<Book> findAll() {
-        try {
-            return entityManager.createQuery("from Book", Book.class).getResultList();
+        try (Session session = entityManager.unwrap(Session.class)) {
+            return session.createQuery("from Book", Book.class).getResultList();
         } catch (Exception e) {
             throw new DataProcessingException("Can't get all books from DB", e);
         }
