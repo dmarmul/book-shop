@@ -9,6 +9,7 @@ import lombok.ToString;
 @Setter
 @ToString
 public class BookDto {
+    private Long id;
     private String title;
     private String author;
     private String isbn;
