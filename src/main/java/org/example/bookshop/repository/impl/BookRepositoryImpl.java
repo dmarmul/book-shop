@@ -3,8 +3,10 @@ package org.example.bookshop.repository.impl;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.example.bookshop.exception.DataProcessingException;
+import org.example.bookshop.exception.EntityNotFoundException;
 import org.example.bookshop.model.Book;
 import org.example.bookshop.repository.BookRepository;
 import org.hibernate.Session;
@@ -40,11 +42,18 @@ public class BookRepositoryImpl implements BookRepository {
     }
 
     @Override
+    public Optional<Book> findById(Long id) {
+        try (Session session = entityManager.unwrap(Session.class)) {
+            return Optional.ofNullable(session.find(Book.class, id));
+        }
+    }
+
+    @Override
     public List<Book> findAll() {
         try (Session session = entityManager.unwrap(Session.class)) {
             return session.createQuery("from Book", Book.class).getResultList();
         } catch (Exception e) {
-            throw new DataProcessingException("Can't get all books from DB", e);
+            throw new EntityNotFoundException("Can't get all books from DB", e);
         }
     }
 }
