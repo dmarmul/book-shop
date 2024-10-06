@@ -1,6 +1,5 @@
 package org.example.bookshop.service.impl;
 
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.example.bookshop.dto.UserRegistrationRequestDto;
 import org.example.bookshop.dto.UserResponseDto;
@@ -19,11 +18,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDto save(UserRegistrationRequestDto requestDto) {
-        Optional<User> user = userRepository.findByEmail(requestDto.getEmail());
-        if (user.isEmpty()) {
-            User saveUser = userMapper.toModel(requestDto);
-            return userMapper.toDto(userRepository.save(saveUser));
+        if (userRepository.existsByEmail(requestDto.getEmail())) {
+            throw new RegistrationException("User already exist");
         }
-        throw new RegistrationException("User already exist");
+
+        User user = userMapper.toModel(requestDto);
+        User saved = userRepository.save(user);
+        UserResponseDto dto = userMapper.toDto(saved);
+        System.out.println(dto);
+        return dto;
     }
 }

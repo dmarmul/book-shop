@@ -1,6 +1,5 @@
 package org.example.bookshop.dto;
 
-import java.math.BigDecimal;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -13,6 +12,6 @@ public class UserResponseDto {
     private String email;
     private String password;
     private String firstName;
-    private BigDecimal lastName;
+    private String lastName;
     private String shippingAddress;
 }
