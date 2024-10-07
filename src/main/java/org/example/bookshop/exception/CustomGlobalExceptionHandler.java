@@ -18,10 +18,10 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 @RestControllerAdvice
 public class CustomGlobalExceptionHandler extends ResponseEntityExceptionHandler {
-    private static final Map<String, Object> body = new LinkedHashMap<>();
+    private static final String ERRORS = "errors";
     private static final String TIMESTAMP = "timestamp";
     private static final String STATUS = "status";
-    private static final String ERRORS = "errors";
+    private final Map<String, Object> body = new LinkedHashMap<>();
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
@@ -29,21 +29,17 @@ public class CustomGlobalExceptionHandler extends ResponseEntityExceptionHandler
             HttpHeaders headers,
             HttpStatusCode status,
             WebRequest request) {
-        body.put(TIMESTAMP, LocalDateTime.now());
-        body.put(STATUS, HttpStatus.BAD_REQUEST);
         List<String> errors = ex.getBindingResult().getAllErrors().stream()
                 .map(this::getErrorMessage)
                 .toList();
-        body.put(ERRORS, errors);
+        setResponseBodyParam(HttpStatus.BAD_REQUEST, errors);
         return new ResponseEntity<>(body, headers, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(RegistrationException.class)
     public ResponseEntity<Object> handleRegistrationException(
             RegistrationException ex) {
-        body.put(TIMESTAMP, LocalDateTime.now());
-        body.put(STATUS, HttpStatus.CONFLICT);
-        body.put(ERRORS, ex.getMessage());
+        setResponseBodyParam(HttpStatus.CONFLICT, List.of(ex.getMessage()));
         return new ResponseEntity<>(body, HttpStatus.CONFLICT);
     }
 
@@ -54,5 +50,11 @@ public class CustomGlobalExceptionHandler extends ResponseEntityExceptionHandler
             return field + ": " + message;
         }
         return e.getDefaultMessage();
+    }
+
+    private void setResponseBodyParam(HttpStatus status, List<String> errors) {
+        body.put(TIMESTAMP, LocalDateTime.now());
+        body.put(STATUS, status);
+        body.put(ERRORS, errors);
     }
 }

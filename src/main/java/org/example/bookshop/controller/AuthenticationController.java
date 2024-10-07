@@ -13,13 +13,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/authorization")
+@RequestMapping("/auth")
 public class AuthenticationController {
     private final UserService userService;
 
     @PostMapping("/registration")
     public UserResponseDto register(@RequestBody @Valid UserRegistrationRequestDto request)
             throws RegistrationException {
-        return userService.save(request);
+        return userService.register(request);
     }
 }
