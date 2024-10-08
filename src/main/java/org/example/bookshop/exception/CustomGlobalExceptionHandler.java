@@ -11,26 +11,36 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @RestControllerAdvice
 public class CustomGlobalExceptionHandler extends ResponseEntityExceptionHandler {
+    private static final String ERRORS = "errors";
+    private static final String TIMESTAMP = "timestamp";
+    private static final String STATUS = "status";
+    private final Map<String, Object> body = new LinkedHashMap<>();
+
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex,
             HttpHeaders headers,
             HttpStatusCode status,
             WebRequest request) {
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", HttpStatus.BAD_REQUEST);
         List<String> errors = ex.getBindingResult().getAllErrors().stream()
                 .map(this::getErrorMessage)
                 .toList();
-        body.put("errors", errors);
+        setResponseBodyParam(HttpStatus.BAD_REQUEST, errors);
         return new ResponseEntity<>(body, headers, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(RegistrationException.class)
+    public ResponseEntity<Object> handleRegistrationException(
+            RegistrationException ex) {
+        setResponseBodyParam(HttpStatus.CONFLICT, List.of(ex.getMessage()));
+        return new ResponseEntity<>(body, HttpStatus.CONFLICT);
     }
 
     private String getErrorMessage(ObjectError e) {
@@ -40,5 +50,11 @@ public class CustomGlobalExceptionHandler extends ResponseEntityExceptionHandler
             return field + ": " + message;
         }
         return e.getDefaultMessage();
+    }
+
+    private void setResponseBodyParam(HttpStatus status, List<String> errors) {
+        body.put(TIMESTAMP, LocalDateTime.now());
+        body.put(STATUS, status);
+        body.put(ERRORS, errors);
     }
 }
