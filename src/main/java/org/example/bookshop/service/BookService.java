@@ -12,6 +12,8 @@ public interface BookService {
 
     List<BookDto> findAll(Pageable pageable);
 
+    List<BookDto> findAll(String email, Pageable pageable);
+
     BookDto update(CreateBookRequestDto requestDto, Long id);
 
     void delete(Long id);

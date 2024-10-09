@@ -7,8 +7,11 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.example.bookshop.dto.BookDto;
 import org.example.bookshop.dto.CreateBookRequestDto;
+import org.example.bookshop.model.User;
 import org.example.bookshop.service.BookService;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,8 +31,9 @@ public class BookController {
     @GetMapping
     @Operation(summary = "Get all books",
             description = "Get a list of all available books")
-    public List<BookDto> getAll(Pageable pageable) {
-        return bookService.findAll(pageable);
+    public List<BookDto> getAll(Authentication authentication, Pageable pageable) {
+        User user = (User) authentication.getPrincipal();
+        return bookService.findAll(user.getEmail(), pageable);
     }
 
     @GetMapping("/{id}")
@@ -39,6 +43,7 @@ public class BookController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Operation(summary = "Add book",
             description = "Add a new book in db. Fields description and coverImage can be null. "
                     + "Price must be not less than 0")
