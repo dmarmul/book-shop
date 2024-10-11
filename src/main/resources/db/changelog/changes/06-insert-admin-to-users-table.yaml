@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - changeSet:
+      id: insert-admin-to-users-table
+      author: mateacademystudent
+      changes:
+        - insert:
+            tableName: users
+            columns:
+              - column: { name: id, value: 1}
+              - column: { name: email, value: "admin@project.com" }
+              - column: { name: password, value: "$2a$10$Ni9Ak0bgCR/d/bY1sSvu4uY4HY9Tl4ZvP6XoMXmEEoEIdfpn.jQ7." }
+              - column: { name: first_name, value: "admin" }
+              - column: { name: last_name, value: "project" }
