@@ -1,6 +1,6 @@
 databaseChangeLog:
   - changeSet:
-      id: insert-admin-to-user-roles-table
+      id: rename-name-column-in-roles-table
       author: mateacademystudent
       changes:
         - renameColumn:

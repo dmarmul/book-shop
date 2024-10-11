@@ -31,7 +31,6 @@ public class Role implements GrantedAuthority {
         return AUTHORITY_PREFIX + role.name();
     }
 
-    @Getter
     public enum RoleType {
         ADMIN,
         USER

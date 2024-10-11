@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: rename-users-roles-table
+      author: mateacademystudent
+      changes:
+        - renameTable:
+            oldTableName: user_roles
+            newTableName: users_roles
