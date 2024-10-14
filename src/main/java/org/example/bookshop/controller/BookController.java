@@ -9,6 +9,7 @@ import org.example.bookshop.dto.BookDto;
 import org.example.bookshop.dto.CreateBookRequestDto;
 import org.example.bookshop.service.BookService;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,8 +31,8 @@ public class BookController {
     @PreAuthorize("hasRole('USER')")
     @Operation(summary = "Get all books",
             description = "Get a list of all available books")
-    public List<BookDto> getAll(Pageable pageable) {
-        return bookService.findAll(pageable);
+    public List<BookDto> getAll(Sort sort, Pageable pageable) {
+        return bookService.findAll(sort, pageable);
     }
 
     @GetMapping("/{id}")
