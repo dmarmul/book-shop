@@ -49,7 +49,7 @@ public class JwtUtil {
         return getClaimFromToken(token, Claims::getSubject);
     }
 
-    public <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
+    private <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = Jwts.parserBuilder()
                 .setSigningKey(secret)
                 .build()
