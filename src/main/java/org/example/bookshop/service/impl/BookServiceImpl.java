@@ -77,8 +77,9 @@ public class BookServiceImpl implements BookService {
 
     private void setCategories(CreateBookRequestDto requestDto, Book book) {
         book.setCategories(requestDto.getCategories().stream()
-                .map(c -> categoryRepository.findById(c.getId()).orElseThrow(()
-                        -> new EntityNotFoundException("Can't find category by id: " + c.getId())
+                .map(categoryDto -> categoryRepository.findById(categoryDto.getId()).orElseThrow(()
+                        -> new EntityNotFoundException(
+                                "Can't find category by id: " + categoryDto.getId())
                 ))
                 .collect(Collectors.toSet()));
     }
