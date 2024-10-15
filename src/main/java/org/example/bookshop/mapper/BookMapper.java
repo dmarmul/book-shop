@@ -1,10 +1,12 @@
 package org.example.bookshop.mapper;
 
+import java.util.stream.Collectors;
 import org.example.bookshop.config.MapperConfig;
 import org.example.bookshop.dto.BookDto;
 import org.example.bookshop.dto.BookDtoWithoutCategoryIds;
 import org.example.bookshop.dto.CreateBookRequestDto;
 import org.example.bookshop.model.Book;
+import org.example.bookshop.model.Category;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
@@ -19,6 +21,10 @@ public interface BookMapper {
 
     @AfterMapping
     default void setCategoryIds(@MappingTarget BookDto bookDto, Book book) {
-
+        bookDto.setCategoryIds(book.getCategories()
+                .stream()
+                .map(Category::getId)
+                .collect(Collectors.toSet())
+        );
     }
 }

@@ -1,7 +1,6 @@
 package org.example.bookshop.service.impl;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.example.bookshop.dto.BookDto;
 import org.example.bookshop.dto.BookDtoWithoutCategoryIds;
@@ -26,9 +25,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public BookDto save(CreateBookRequestDto requestDto) {
-        Book book = bookMapper.toModel(requestDto);
-        setCategories(requestDto, book);
-        return bookMapper.toDto(bookRepository.save(book));
+        return bookMapper.toDto(bookRepository.save(bookMapper.toModel(requestDto)));
     }
 
     @Override
@@ -49,15 +46,8 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public BookDto update(CreateBookRequestDto requestDto, Long id) {
-        Book book = bookRepository.findById(id).orElseThrow(
-                () -> new EntityNotFoundException("Can't find book by id: " + id));
-        book.setTitle(requestDto.getTitle());
-        book.setAuthor(requestDto.getAuthor());
-        book.setIsbn(requestDto.getIsbn());
-        book.setPrice(requestDto.getPrice());
-        book.setDescription(requestDto.getDescription());
-        book.setCoverImage(requestDto.getCoverImage());
-        setCategories(requestDto, book);
+        Book book = bookMapper.toModel(requestDto);
+        book.setId(id);
 
         return bookMapper.toDto(bookRepository.save(book));
     }
@@ -73,14 +63,5 @@ public class BookServiceImpl implements BookService {
         return bookRepository.findAllByCategoriesId(id).stream()
                 .map(bookMapper::toDtoWithoutCategories)
                 .toList();
-    }
-
-    private void setCategories(CreateBookRequestDto requestDto, Book book) {
-        book.setCategories(requestDto.getCategories().stream()
-                .map(categoryDto -> categoryRepository.findById(categoryDto.getId()).orElseThrow(()
-                        -> new EntityNotFoundException(
-                                "Can't find category by id: " + categoryDto.getId())
-                ))
-                .collect(Collectors.toSet()));
     }
 }
