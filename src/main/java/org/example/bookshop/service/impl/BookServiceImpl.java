@@ -9,7 +9,6 @@ import org.example.bookshop.exception.EntityNotFoundException;
 import org.example.bookshop.mapper.BookMapper;
 import org.example.bookshop.model.Book;
 import org.example.bookshop.repository.BookRepository;
-import org.example.bookshop.repository.CategoryRepository;
 import org.example.bookshop.service.BookService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -20,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
-    private final CategoryRepository categoryRepository;
     private final BookMapper bookMapper;
 
     @Override
@@ -45,9 +43,12 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Transactional
     public BookDto update(CreateBookRequestDto requestDto, Long id) {
-        Book book = bookMapper.toModel(requestDto);
-        book.setId(id);
+        Book book = bookRepository.findById(id).orElseThrow(
+                () -> new EntityNotFoundException("Can't find book by id: " + id)
+        );
+        bookMapper.updateBookFromDto(requestDto, book);
 
         return bookMapper.toDto(bookRepository.save(book));
     }
