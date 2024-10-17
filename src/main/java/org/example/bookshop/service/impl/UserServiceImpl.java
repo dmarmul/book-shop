@@ -7,7 +7,9 @@ import org.example.bookshop.dto.UserResponseDto;
 import org.example.bookshop.exception.RegistrationException;
 import org.example.bookshop.mapper.UserMapper;
 import org.example.bookshop.model.Role;
+import org.example.bookshop.model.ShoppingCart;
 import org.example.bookshop.model.User;
+import org.example.bookshop.repository.CartRepository;
 import org.example.bookshop.repository.RoleRepository;
 import org.example.bookshop.repository.UserRepository;
 import org.example.bookshop.service.UserService;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 @Service
 public class UserServiceImpl implements UserService {
+    private final CartRepository cartRepository;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
@@ -31,6 +34,11 @@ public class UserServiceImpl implements UserService {
         User user = userMapper.toModel(requestDto);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRoles(Set.of(roleRepository.findByRole(Role.RoleType.USER)));
-        return userMapper.toDto(userRepository.save(user));
+        user = userRepository.save(user);
+
+        ShoppingCart shoppingCart = new ShoppingCart();
+        shoppingCart.setUser(user);
+        cartRepository.save(shoppingCart);
+        return userMapper.toDto(user);
     }
 }
