@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class CartDto {
+public class ShoppingCartDto {
     private Long id;
     private Long userId;
     private Set<CartItemDto> cartItems;

@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class CreateCartRequestDto {
+public class CartItemRequestDto {
     @NotNull
     @Min(1)
     private Long bookId;

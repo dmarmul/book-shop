@@ -1,17 +1,18 @@
 package org.example.bookshop.service;
 
 import jakarta.validation.Valid;
-import org.example.bookshop.dto.CartDto;
 import org.example.bookshop.dto.CartItemDto;
+import org.example.bookshop.dto.CartItemRequestDto;
 import org.example.bookshop.dto.CartUpdateRequestDto;
-import org.example.bookshop.dto.CreateCartRequestDto;
+import org.example.bookshop.dto.ShoppingCartDto;
+import org.example.bookshop.model.User;
 
 public interface CartService {
-    CartDto findAll(String username);
+    ShoppingCartDto get(User user);
 
-    CartItemDto add(@Valid CreateCartRequestDto requestDto, String username);
+    CartItemDto add(@Valid CartItemRequestDto requestDto, User user);
 
-    CartItemDto update(@Valid CartUpdateRequestDto requestDto, Long cartItemId, String username);
+    CartItemDto update(@Valid CartUpdateRequestDto requestDto, Long cartItemId, User user);
 
-    void delete(Long cartItemId, String username);
+    void delete(Long cartItemId, User user);
 }
