@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.example.bookshop.dto.CartItemDto;
 import org.example.bookshop.dto.CartItemRequestDto;
 import org.example.bookshop.dto.CartUpdateRequestDto;
 import org.example.bookshop.dto.ShoppingCartDto;
@@ -43,7 +42,7 @@ public class CartController {
     @Operation(summary = "Add books to cart",
             description = "Add books to the shopping cart."
                     + " Fields bookId and quantity can't must be not less than 1, can't be null.")
-    public CartItemDto add(@RequestBody @Valid CartItemRequestDto requestDto,
+    public ShoppingCartDto add(@RequestBody @Valid CartItemRequestDto requestDto,
                            @AuthenticationPrincipal User user) {
         return cartService.add(requestDto, user);
     }
@@ -52,9 +51,9 @@ public class CartController {
     @PreAuthorize("hasRole('USER')")
     @Operation(summary = "Update the books quantity",
             description = "Update the books quantity in shopping cart")
-    public CartItemDto update(@RequestBody @Valid CartUpdateRequestDto requestDto,
-                              @PathVariable Long cartItemId,
-                              @AuthenticationPrincipal User user) {
+    public ShoppingCartDto update(@RequestBody @Valid CartUpdateRequestDto requestDto,
+                                  @PathVariable Long cartItemId,
+                                  @AuthenticationPrincipal User user) {
         return cartService.update(requestDto, cartItemId, user);
     }
 
