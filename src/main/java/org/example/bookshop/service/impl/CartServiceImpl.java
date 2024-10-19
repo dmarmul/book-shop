@@ -14,7 +14,6 @@ import org.example.bookshop.model.User;
 import org.example.bookshop.repository.BookRepository;
 import org.example.bookshop.repository.CartItemRepository;
 import org.example.bookshop.repository.CartRepository;
-import org.example.bookshop.repository.UserRepository;
 import org.example.bookshop.service.CartService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +26,6 @@ public class CartServiceImpl implements CartService {
     private final CartItemRepository cartItemRepository;
     private final CartRepository cartRepository;
     private final ShoppingCartMapper shoppingCartMapper;
-    private final UserRepository userRepository;
 
     @Override
     public ShoppingCartDto get(User user) {
@@ -74,12 +72,9 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    @Transactional
     public void createShoppingCart(User user) {
         ShoppingCart shoppingCart = new ShoppingCart();
-        shoppingCart.setUser(userRepository.findById(user.getId()).orElseThrow(() ->
-                new EntityNotFoundException("Not found user with id: " + user.getId())
-        ));
+        shoppingCart.setUser(user);
         cartRepository.save(shoppingCart);
     }
 
