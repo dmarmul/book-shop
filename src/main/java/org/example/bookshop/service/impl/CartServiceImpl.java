@@ -64,11 +64,10 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public void delete(Long id, User user) {
-        if (cartItemRepository.findByIdAndUserId(id, user.getId()).isPresent()) {
-            cartItemRepository.deleteById(id);
-        } else {
+        if (cartItemRepository.findByIdAndUserId(id, user.getId()).isEmpty()) {
             throw new EntityNotFoundException("Can't find cartItem by id: " + id);
         }
+        cartItemRepository.deleteById(id);
     }
 
     @Override
