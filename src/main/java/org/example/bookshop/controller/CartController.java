@@ -41,7 +41,7 @@ public class CartController {
     @PreAuthorize("hasRole('USER')")
     @Operation(summary = "Add books to cart",
             description = "Add books to the shopping cart."
-                    + " Fields bookId and quantity can't must be not less than 1, can't be null.")
+                    + " Fields bookId and quantity must be positive, can't be null.")
     public ShoppingCartDto add(@RequestBody @Valid CartItemRequestDto requestDto,
                            @AuthenticationPrincipal User user) {
         return cartService.add(requestDto, user);
