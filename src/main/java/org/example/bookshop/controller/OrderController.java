@@ -11,6 +11,7 @@ import org.example.bookshop.dto.OrderPurchaseRequestDto;
 import org.example.bookshop.dto.OrderStatusRequestDto;
 import org.example.bookshop.model.User;
 import org.example.bookshop.service.OrderService;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -44,8 +45,8 @@ public class OrderController {
     @PreAuthorize("hasRole('USER')")
     @Operation(summary = "Get orders history",
             description = "Retrieve all user's orders")
-    public Set<OrderDto> getAll(@AuthenticationPrincipal User user,
-                                Sort sort, Pageable pageable) {
+    public Page<OrderDto> getAll(@AuthenticationPrincipal User user,
+                                 Sort sort, Pageable pageable) {
         return orderService.getAll(user, sort, pageable);
     }
 
