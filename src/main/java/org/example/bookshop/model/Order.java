@@ -40,11 +40,11 @@ public class Order {
     private User user;
     @Column(nullable = false, unique = true)
     @Enumerated(EnumType.STRING)
-    private Order.Status status;
+    private Order.Status status = Order.Status.PENDING;
     @Column(nullable = false)
     private BigDecimal total;
     @Column(nullable = false)
-    private LocalDateTime orderDate;
+    private LocalDateTime orderDate = LocalDateTime.now();
     @Column(nullable = false)
     private String shippingAddress;
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL,

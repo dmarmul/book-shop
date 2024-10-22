@@ -38,7 +38,7 @@ public class OrderController {
                     + " ShippingAddress can't be empty.")
     public OrderDto add(@RequestBody @Valid OrderPurchaseRequestDto requestDto,
                         @AuthenticationPrincipal User user) {
-        return orderService.add(requestDto, user);
+        return orderService.placeOrder(requestDto, user);
     }
 
     @GetMapping
@@ -54,18 +54,18 @@ public class OrderController {
     @PreAuthorize("hasRole('USER')")
     @Operation(summary = "Update order status",
             description = "Update order status")
-    public void update(@RequestBody @Valid OrderStatusRequestDto requestDto,
+    public OrderDto update(@RequestBody @Valid OrderStatusRequestDto requestDto,
                        @PathVariable Long orderId,
                        @AuthenticationPrincipal User user) {
-        orderService.update(requestDto, orderId, user);
+        return orderService.update(requestDto, orderId, user);
     }
 
     @GetMapping("/{orderId}/items")
     @PreAuthorize("hasRole('USER')")
     @Operation(summary = "Get OrderItems",
             description = "Retrieve all OrderItems for a specific order")
-    public Set<OrderItemDto> get(@PathVariable Long orderId,
-                                 @AuthenticationPrincipal User user) {
+    public Set<OrderItemDto> getOrderItems(@PathVariable Long orderId,
+                                           @AuthenticationPrincipal User user) {
         return orderService.get(orderId, user);
     }
 

@@ -1,7 +1,6 @@
 package org.example.bookshop.service.impl;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +39,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public OrderDto add(OrderPurchaseRequestDto requestDto, User user) {
+    public OrderDto placeOrder(OrderPurchaseRequestDto requestDto, User user) {
         ShoppingCart shoppingCart = cartRepository.findByUserId(
                 user.getId()).orElseThrow(() -> new EntityNotFoundException(
                 "Can't find order for user: " + user.getEmail()));
@@ -57,20 +56,19 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public void update(OrderStatusRequestDto requestDto, Long orderId, User user) {
+    public OrderDto update(OrderStatusRequestDto requestDto, Long orderId, User user) {
         Order order = findOrderByIdAndUserId(orderId, user.getId());
         Order.Status status = Order.Status.valueOf(requestDto.getStatus());
         if (order.getStatus().equals(status)) {
             throw new DataProcessingException("Order already has status: " + status);
         }
         order.setStatus(status);
-        orderRepository.save(order);
+        return orderMapper.toDto(orderRepository.save(order));
     }
 
     @Override
     public Set<OrderItemDto> get(Long orderId, User user) {
-        findOrderByIdAndUserId(orderId, user.getId());
-        return orderItemRepository.findAllByOrderId(orderId).stream()
+        return orderItemRepository.findAllByOrderIdUserId(orderId, user.getId()).stream()
                 .map(orderItemMapper::toDto)
                 .collect(Collectors.toSet());
     }
@@ -78,9 +76,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderItemDto getOrderItem(Long orderId, Long itemId, User user) {
         return orderItemMapper.toDto(
-                orderItemRepository.findByIdAndOrderId(itemId, orderId)
-                        .filter(orderItem ->
-                                orderItem.getOrder().getUser().getId().equals(user.getId()))
+                orderItemRepository.findByIdAndOrderIdAndUserId(itemId, orderId, user.getId())
                         .orElseThrow(() ->
                                 new EntityNotFoundException("Can't find item with id: " + itemId))
         );
@@ -90,8 +86,6 @@ public class OrderServiceImpl implements OrderService {
                               OrderPurchaseRequestDto requestDto, User user) {
         Order order = orderMapper.toEntity(shoppingCart);
         order.setShippingAddress(requestDto.getShippingAddress());
-        order.setOrderDate(LocalDateTime.now());
-        order.setStatus(Order.Status.PENDING);
         Set<OrderItem> orderItems = findOrderItems(user);
         orderItems.forEach(item ->
                 item.setPrice(item.getPrice().multiply(new BigDecimal(item.getQuantity()))));

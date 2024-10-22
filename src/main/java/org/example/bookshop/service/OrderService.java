@@ -11,11 +11,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 public interface OrderService {
-    OrderDto add(OrderPurchaseRequestDto requestDto, User user);
+    OrderDto placeOrder(OrderPurchaseRequestDto requestDto, User user);
 
     Page<OrderDto> getAll(User user, Sort sort, Pageable pageable);
 
-    void update(OrderStatusRequestDto requestDto, Long orderId, User user);
+    OrderDto update(OrderStatusRequestDto requestDto, Long orderId, User user);
 
     Set<OrderItemDto> get(Long orderId, User user);
 
