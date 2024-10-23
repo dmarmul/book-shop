@@ -1,0 +1,50 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-orders_items-table
+      author: mateacademystudent
+      changes:
+        - createTable:
+            tableName: orders_items
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_orders_items
+                    nullable: false
+              - column:
+                  name: order_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: book_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: quantity
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: price
+                  type: java.math.BigDecimal
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: orders_items
+            baseColumnNames: order_id
+            constraintName: fk_orders_items_order
+            referencedTableName: orders
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - addForeignKeyConstraint:
+            baseTableName: orders_items
+            baseColumnNames: book_id
+            constraintName: fk_orders_items_book
+            referencedTableName: books
+            referencedColumnNames: id
+            onDelete: RESTRICT
