@@ -14,6 +14,7 @@ import org.example.bookshop.service.CartService;
 import org.example.bookshop.service.UserService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
@@ -24,6 +25,7 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
+    @Transactional
     @Override
     public UserResponseDto register(UserRegistrationRequestDto requestDto) {
         if (userRepository.existsByEmail(requestDto.getEmail())) {
