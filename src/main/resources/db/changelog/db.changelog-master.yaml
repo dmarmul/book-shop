@@ -4,17 +4,17 @@ databaseChangeLog:
   - include:
       file: db/changelog/changes/02-create-users-table.yaml
   - include:
-      file: db/changelog/changes/03-create-roles-table.yaml
+      file: db/changelog/changes/003-create-roles-table.yaml
   - include:
       file: db/changelog/changes/05-create-user-roles-table.yaml
   - include:
       file: db/changelog/changes/06-insert-admin-to-users-table.yaml
   - include:
-      file: db/changelog/changes/07-rename-name-column-in-roles-table.yaml
+      file: db/changelog/changes/007-rename-name-column-in-roles-table.yaml
   - include:
       file: db/changelog/changes/08-rename-users-roles-table.yaml
   - include:
-      file: db/changelog/changes/09-insert-values-to-roles-table.yaml
+      file: db/changelog/changes/009-insert-values-to-roles-table.yaml
   - include:
       file: db/changelog/changes/12-insert-admin-to-users-roles-table.yaml
   - include:
@@ -29,3 +29,33 @@ databaseChangeLog:
       file: db/changelog/changes/21-create-orders-table.yaml
   - include:
       file: db/changelog/changes/22-create-orders_items-table.yaml
+#  - include:
+#      file: db/changelog/changes/03-create-roles-table.yaml
+#  - include:
+#      file: db/changelog/changes/05-create-user-roles-table.yaml
+#  - include:
+#      file: db/changelog/changes/06-insert-admin-to-users-table.yaml
+#  - include:
+#      file: db/changelog/changes/07-rename-name-column-in-roles-table.yaml
+#  - include:
+#      file: db/changelog/changes/08-rename-users-roles-table.yaml
+#  - include:
+#      file: db/changelog/changes/09-insert-values-to-roles-table.yaml
+#  - include:
+#      file: db/changelog/changes/12-insert-admin-to-users-roles-table.yaml
+#  - include:
+#      file: db/changelog/changes/15-create-categories-table.yaml
+#  - include:
+#      file: db/changelog/changes/16-create-books-categories-table.yaml
+#  - include:
+#      file: db/changelog/changes/17-create-shopping-carts-table.yaml
+#  - include:
+#      file: db/changelog/changes/18-create-carts_items-table.yaml
+#  - include:
+#      file: db/changelog/changes/21-create-orders-table.yaml
+#  - include:
+#      file: db/changelog/changes/22-create-orders_items-table.yaml
+  - include:
+      file: db/changelog/changes/23-change-roles-table.yaml
+  - include:
+      file: db/changelog/changes/24-insert-book-to-books-table.yaml

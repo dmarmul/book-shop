@@ -1,0 +1,10 @@
+databaseChangeLog:
+  - changeSet:
+      id: rename-name-column-in-roles-table
+      author: mateacademystudent
+      changes:
+        - renameColumn:
+            tableName: roles
+            oldColumnName: name
+            newColumnName: role
+            columnDataType: "ENUM('ROLE_USER', 'ROLE_ADMIN')"
