@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - changeSet:
+      id: rename-roles-names-in-roles-table
+      author: mateacademystudent
+      changes:
+        - insert:
+            tableName: roles
+            columns:
+              - column:
+                  name: role
+                  value: ROLE_USER

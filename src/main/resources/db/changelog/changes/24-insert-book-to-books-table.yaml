@@ -1,0 +1,23 @@
+databaseChangeLog:
+  - changeSet:
+      id: insert-book-to-books-table
+      author: mateacademystudent
+      changes:
+        - insert:
+            tableName: books
+            columns:
+              - column:
+                  name: title
+                  value: Harry Potter
+              - column:
+                  name: author
+                  value: Rowling
+              - column:
+                  name: isbn
+                  value: 112112
+              - column:
+                  name: price
+                  value: 100
+              - column:
+                  name: description
+                  value: great book
