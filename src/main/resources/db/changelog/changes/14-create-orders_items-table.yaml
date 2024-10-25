@@ -1,10 +1,10 @@
 databaseChangeLog:
   - changeSet:
-      id: create-carts_items-table
-      author: mateacademystudent
+      id: create-orders_items-table
+      author: dmarmul
       changes:
         - createTable:
-            tableName: carts_items
+            tableName: orders_items
             columns:
               - column:
                   name: id
@@ -12,10 +12,10 @@ databaseChangeLog:
                   autoIncrement: true
                   constraints:
                     primaryKey: true
-                    primaryKeyName: pk_carts_items
+                    primaryKeyName: pk_orders_items
                     nullable: false
               - column:
-                  name: shopping_cart_id
+                  name: order_id
                   type: bigint
                   constraints:
                     nullable: false
@@ -29,17 +29,22 @@ databaseChangeLog:
                   type: bigint
                   constraints:
                     nullable: false
+              - column:
+                  name: price
+                  type: java.math.BigDecimal
+                  constraints:
+                    nullable: false
         - addForeignKeyConstraint:
-            baseTableName: carts_items
-            baseColumnNames: shopping_cart_id
-            constraintName: fk_carts_items_shopping_cart
-            referencedTableName: shopping_carts
+            baseTableName: orders_items
+            baseColumnNames: order_id
+            constraintName: fk_orders_items_order
+            referencedTableName: orders
             referencedColumnNames: id
             onDelete: CASCADE
         - addForeignKeyConstraint:
-            baseTableName: carts_items
+            baseTableName: orders_items
             baseColumnNames: book_id
-            constraintName: fk_carts_items_book
+            constraintName: fk_orders_items_book
             referencedTableName: books
             referencedColumnNames: id
             onDelete: RESTRICT

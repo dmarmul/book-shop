@@ -1,7 +1,7 @@
 databaseChangeLog:
   - changeSet:
-      id: rename-roles-names-in-roles-table
-      author: mateacademystudent
+      id: insert-roles-to-roles-table
+      author: dmarmul
       changes:
         - insert:
             tableName: roles
