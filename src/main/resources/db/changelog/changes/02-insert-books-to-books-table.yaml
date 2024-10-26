@@ -1,0 +1,59 @@
+databaseChangeLog:
+  - changeSet:
+      id: insert-book-to-books-table
+      author: dmarmul
+      changes:
+        - insert:
+            tableName: books
+            columns:
+              - column:
+                  name: title
+                  value: Harry Potter
+              - column:
+                  name: author
+                  value: Rowling
+              - column:
+                  name: isbn
+                  value: 12112
+              - column:
+                  name: price
+                  value: 100
+              - column:
+                  name: description
+                  value: fine book
+        - insert:
+            tableName: books
+            columns:
+              - column:
+                  name: title
+                  value: 1984
+              - column:
+                  name: author
+                  value: George Orwell
+              - column:
+                  name: isbn
+                  value: 102122
+              - column:
+                  name: price
+                  value: 200
+              - column:
+                  name: description
+                  value: cool book
+        - insert:
+            tableName: books
+            columns:
+              - column:
+                  name: title
+                  value: The Little Prince
+              - column:
+                  name: author
+                  value: Antoine de Saint-Exupery
+              - column:
+                  name: isbn
+                  value: 102123
+              - column:
+                  name: price
+                  value: 300
+              - column:
+                  name: description
+                  value: great book

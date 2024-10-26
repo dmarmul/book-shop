@@ -1,7 +1,7 @@
 databaseChangeLog:
   - changeSet:
       id: create-roles-table
-      author: mateacademystudent
+      author: dmarmul
       changes:
         - createTable:
             tableName: roles
@@ -14,8 +14,8 @@ databaseChangeLog:
                     primaryKey: true
                     nullable: false
               - column:
-                  name: name
-                  type: "ENUM('USER', 'ADMIN')"
+                  name: role
+                  type: "ENUM('ROLE_USER', 'ROLE_ADMIN')"
                   constraints:
                     nullable: false
                     unique: true

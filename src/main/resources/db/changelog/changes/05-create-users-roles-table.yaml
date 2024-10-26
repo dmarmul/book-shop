@@ -1,10 +1,10 @@
 databaseChangeLog:
   - changeSet:
-      id: create-user-roles-table
-      author: mateacademystudent
+      id: create-users-roles-table
+      author: dmarmul
       changes:
         - createTable:
-            tableName: user_roles
+            tableName: users_roles
             columns:
               - column:
                   name: user_id
@@ -17,19 +17,19 @@ databaseChangeLog:
                   constraints:
                     nullable: false
         - addPrimaryKey:
-            tableName: user_roles
+            tableName: users_roles
             columnNames: user_id, role_id
         - addForeignKeyConstraint:
-            baseTableName: user_roles
+            baseTableName: users_roles
             baseColumnNames: user_id
-            constraintName: fk_user_roles_user
+            constraintName: fk_users_roles_user
             referencedTableName: users
             referencedColumnNames: id
             onDelete: CASCADE
         - addForeignKeyConstraint:
-            baseTableName: user_roles
+            baseTableName: users_roles
             baseColumnNames: role_id
-            constraintName: fk_user_roles_role
+            constraintName: fk_users_roles_role
             referencedTableName: roles
             referencedColumnNames: id
             onDelete: CASCADE

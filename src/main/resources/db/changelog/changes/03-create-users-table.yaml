@@ -1,10 +1,10 @@
 databaseChangeLog:
   - changeSet:
-      id: create-categories-table
-      author: mateacademystudent
+      id: create-users-table
+      author: dmarmul
       changes:
         - createTable:
-            tableName: categories
+            tableName: users
             columns:
               - column:
                   name: id
@@ -12,16 +12,30 @@ databaseChangeLog:
                   autoIncrement: true
                   constraints:
                     primaryKey: true
-                    primaryKeyName: pk_categories
                     nullable: false
               - column:
-                  name: name
+                  name: email
                   type: varchar(255)
                   constraints:
                     nullable: false
                     unique: true
               - column:
-                  name: description
+                  name: password
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: first_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: last_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: shipping_address
                   type: varchar(255)
               - column:
                   name: is_deleted

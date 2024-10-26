@@ -17,8 +17,6 @@ import org.springframework.security.core.GrantedAuthority;
 @Setter
 @Table(name = "roles")
 public class Role implements GrantedAuthority {
-    private static final String AUTHORITY_PREFIX = "ROLE_";
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -28,11 +26,11 @@ public class Role implements GrantedAuthority {
 
     @Override
     public String getAuthority() {
-        return AUTHORITY_PREFIX + role.name();
+        return role.name();
     }
 
     public enum RoleType {
-        ADMIN,
-        USER
+        ROLE_ADMIN,
+        ROLE_USER
     }
 }
