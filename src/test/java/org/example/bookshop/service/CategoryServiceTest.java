@@ -50,7 +50,7 @@ class CategoryServiceTest {
     }
 
     @Test
-    void save() {
+    void saveCategory_ValidRequestDto_ShouldReturnValidCategoryDto() {
         when(categoryMapper.toModel(categoryDto)).thenReturn(category);
         when(categoryRepository.save(category)).thenReturn(category);
         when(categoryMapper.toDto(category)).thenReturn(categoryDto);

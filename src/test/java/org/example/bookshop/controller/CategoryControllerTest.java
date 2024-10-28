@@ -16,6 +16,7 @@ import java.util.stream.IntStream;
 import javax.sql.DataSource;
 import org.example.bookshop.dto.BookDtoWithoutCategoryIds;
 import org.example.bookshop.dto.CategoryDto;
+import org.example.bookshop.repository.CategoryRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -52,6 +53,8 @@ class CategoryControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     @BeforeAll
     public static void beforeAll(
@@ -121,20 +124,6 @@ class CategoryControllerTest {
         Assertions.assertEquals(expected.size(), actualList.size());
         Assertions.assertTrue(IntStream.range(0, expected.size())
                 .allMatch(i -> EqualsBuilder.reflectionEquals(expected.get(i), actualList.get(i))));
-    }
-
-    private List<CategoryDto> createCategoriesDto() {
-        CategoryDto secondCategoryDto = new CategoryDto();
-        secondCategoryDto.setId(SECOND_ID);
-        secondCategoryDto.setName(CATEGORY_NAME + UNIQUE_PARAM);
-        secondCategoryDto.setDescription(CATEGORY_DESCRIPTION + UNIQUE_PARAM);
-        CategoryDto thirdCategoryDto = new CategoryDto();
-        thirdCategoryDto.setId(THIRD_ID);
-        thirdCategoryDto.setName(UNIQUE_PARAM + CATEGORY_NAME);
-        thirdCategoryDto.setDescription(UNIQUE_PARAM + CATEGORY_DESCRIPTION);
-        categoryDto.setId(FIRST_ID);
-
-        return List.of(categoryDto, secondCategoryDto, thirdCategoryDto);
     }
 
     @Test
@@ -232,5 +221,19 @@ class CategoryControllerTest {
         secondBookDto.setPrice(BOOK_PRICE);
 
         return List.of(bookDto, secondBookDto);
+    }
+
+    private List<CategoryDto> createCategoriesDto() {
+        CategoryDto secondCategoryDto = new CategoryDto();
+        secondCategoryDto.setId(SECOND_ID);
+        secondCategoryDto.setName(CATEGORY_NAME + UNIQUE_PARAM);
+        secondCategoryDto.setDescription(CATEGORY_DESCRIPTION + UNIQUE_PARAM);
+        CategoryDto thirdCategoryDto = new CategoryDto();
+        thirdCategoryDto.setId(THIRD_ID);
+        thirdCategoryDto.setName(UNIQUE_PARAM + CATEGORY_NAME);
+        thirdCategoryDto.setDescription(UNIQUE_PARAM + CATEGORY_DESCRIPTION);
+        categoryDto.setId(FIRST_ID);
+
+        return List.of(categoryDto, secondCategoryDto, thirdCategoryDto);
     }
 }
