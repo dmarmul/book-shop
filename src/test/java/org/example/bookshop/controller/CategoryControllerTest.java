@@ -150,7 +150,7 @@ class CategoryControllerTest {
             executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     @WithMockUser(roles = {"USER"})
     @DisplayName("Get books by category id")
-    void getBooksByCategoryId() throws Exception {
+    void getBooksByCategoryId_ValidId_Success() throws Exception {
         List<BookDtoWithoutCategoryIds> expected = getCategoryIds();
 
         MvcResult result = mockMvc.perform(
