@@ -16,7 +16,7 @@ import org.example.bookshop.mapper.CategoryMapper;
 import org.example.bookshop.model.Category;
 import org.example.bookshop.repository.CategoryRepository;
 import org.example.bookshop.service.impl.CategoryServiceImpl;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -31,6 +31,7 @@ class CategoryServiceTest {
     private static final Long NON_EXISTING_CATEGORY_ID = 100L;
     private static final String CATEGORY_NAME = "Category 1";
     private static final String CATEGORY_DESCRIPTION = "Description 1";
+    private static final String EXCEPTION_MESSAGE = "Can't find category by id: ";
     private static final String UPDATE_NAME = "new name";
     private static final String UPDATE_DESCRIPTION = "new description";
 
@@ -43,75 +44,74 @@ class CategoryServiceTest {
     @Mock
     private CategoryMapper categoryMapper;
 
-    @BeforeAll
-    static void beforeAll() {
+    @BeforeEach
+    void beforeEach() {
         categoryDto.setName(CATEGORY_NAME);
         categoryDto.setDescription(CATEGORY_DESCRIPTION);
     }
 
     @Test
-    void saveCategory_ValidRequestDto_ShouldReturnValidCategoryDto() {
+    void saveCategory_ValidRequestDto_ReturnCategoryDto() {
+        // When
         when(categoryMapper.toModel(categoryDto)).thenReturn(category);
         when(categoryRepository.save(category)).thenReturn(category);
         when(categoryMapper.toDto(category)).thenReturn(categoryDto);
-
         CategoryDto actualCategory = categoryService.save(categoryDto);
-
+        // Then
         assertThat(actualCategory).isEqualTo(categoryDto);
         verify(categoryRepository, times(1)).save(category);
         verifyNoMoreInteractions(categoryRepository, categoryMapper);
     }
 
     @Test
-    void findAll_ShouldReturnValidListCategoryDto() {
+    void findAll_ReturnListCategoryDto() {
+        // Given
         Optional<Category> optionalCategory = Optional.of(category);
-
+        // When
         when(categoryRepository.findById(CATEGORY_ID)).thenReturn(optionalCategory);
         when(categoryMapper.toDto(optionalCategory.get())).thenReturn(categoryDto);
-
         CategoryDto actualCategory = categoryService.findById(CATEGORY_ID);
-
+        // Then
         assertThat(actualCategory).isEqualTo(categoryDto);
         verify(categoryRepository, times(1)).findById(CATEGORY_ID);
         verifyNoMoreInteractions(categoryRepository, categoryMapper);
     }
 
     @Test
-    void findById_WithValidCategoryId_ShouldReturnValidCategoryDto() {
+    void findById_ValidCategoryId_ReturnCategoryDto() {
+        // Given
         Optional<Category> optionalCategory = Optional.of(category);
-
+        // When
         when(categoryRepository.findById(CATEGORY_ID)).thenReturn(optionalCategory);
         when(categoryMapper.toDto(optionalCategory.get())).thenReturn(categoryDto);
-
         CategoryDto actualCategory = categoryService.findById(CATEGORY_ID);
-
+        // Then
         assertThat(actualCategory).isEqualTo(categoryDto);
         verify(categoryRepository, times(1)).findById(CATEGORY_ID);
         verifyNoMoreInteractions(categoryRepository, categoryMapper);
     }
 
     @Test
-    void findById_WithNonExistingCategoryId_ShouldThrowException() {
+    void findById_NonExistingCategoryId_ThrowException() {
+        // Given
+        String expected = EXCEPTION_MESSAGE + NON_EXISTING_CATEGORY_ID;
+        // When
         when(categoryRepository.findById(NON_EXISTING_CATEGORY_ID)).thenReturn(Optional.empty());
-
         Exception exception = assertThrows(EntityNotFoundException.class,
                 () -> categoryService.findById(NON_EXISTING_CATEGORY_ID)
         );
-
-        String expected = "Can't find category by id: " + NON_EXISTING_CATEGORY_ID;
-        String actual = exception.getMessage();
-
-        assertEquals(expected, actual);
+        // Then
+        assertEquals(expected, exception.getMessage());
     }
 
     @Test
-    void updateByIdWithValidCategoryId_ShouldReturnValidCategoryDto() {
+    void updateById_ValidCategoryId_ReturnCategoryDto() {
+        // Given
         CategoryDto updateCategoryDto = new CategoryDto();
         updateCategoryDto.setName(UPDATE_NAME);
         updateCategoryDto.setDescription(UPDATE_DESCRIPTION);
-
         Category updateCategory = new Category();
-
+        // When
         when(categoryRepository.findById(CATEGORY_ID)).thenReturn(Optional.of(updateCategory));
         doAnswer(invocation -> {
             updateCategory.setName(UPDATE_NAME);
@@ -132,16 +132,15 @@ class CategoryServiceTest {
     }
 
     @Test
-    void updateByIdWithNonExistingCategoryId_ShouldThrowException() {
+    void updateById_NonExistingCategoryId_ThrowException() {
+        // Given
+        String expected = EXCEPTION_MESSAGE + NON_EXISTING_CATEGORY_ID;
+        // When
         when(categoryRepository.findById(NON_EXISTING_CATEGORY_ID)).thenReturn(Optional.empty());
-
         Exception exception = assertThrows(EntityNotFoundException.class,
                 () -> categoryService.update(categoryDto, NON_EXISTING_CATEGORY_ID)
         );
-
-        String expected = "Can't find category by id: " + NON_EXISTING_CATEGORY_ID;
-        String actual = exception.getMessage();
-
-        assertEquals(expected, actual);
+        // Then
+        assertEquals(expected, exception.getMessage());
     }
 }

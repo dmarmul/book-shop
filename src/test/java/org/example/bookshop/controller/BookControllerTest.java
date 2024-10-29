@@ -19,8 +19,10 @@ import javax.sql.DataSource;
 import org.example.bookshop.dto.BookDto;
 import org.example.bookshop.dto.CategoryDto;
 import org.example.bookshop.dto.CreateBookRequestDto;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,16 +57,32 @@ class BookControllerTest {
     private static final CategoryDto categoryDto = new CategoryDto();
     private static final CreateBookRequestDto requestDto = new CreateBookRequestDto();
     private static final Set<CategoryDto> categories = new HashSet<>();
-    private static final Set<Long> categoriesId = Set.of(FIRST_ID);
 
     @Autowired
     private ObjectMapper objectMapper;
 
     @BeforeAll
-    public static void beforeAll(
-            @Autowired DataSource dataSource,
-            @Autowired WebApplicationContext applicationContext
-    ) throws SQLException {
+    public static void beforeAll(@Autowired DataSource dataSource,
+                                 @Autowired WebApplicationContext applicationContext)
+            throws SQLException {
+        mockMvc = MockMvcBuilders
+                .webAppContextSetup(applicationContext)
+                .apply(springSecurity())
+                .build();
+        try (Connection connection = dataSource.getConnection()) {
+            connection.setAutoCommit(true);
+            List<String> scriptPaths = List.of(
+                    "database/categories/delete-all-categories-from-categories-table.sql",
+                    "database/books/delete-all-books-from-books-table.sql"
+            );
+            for (String scriptPath : scriptPaths) {
+                ScriptUtils.executeSqlScript(connection, new ClassPathResource(scriptPath));
+            }
+        }
+    }
+
+    @BeforeEach
+    public void beforeEach(@Autowired DataSource dataSource) throws SQLException {
         categoryDto.setId(FIRST_ID);
         categoryDto.setName(CATEGORY_NAME);
         categoryDto.setDescription(CATEGORY_DESCRIPTION);
@@ -75,7 +93,7 @@ class BookControllerTest {
         bookDto.setAuthor(BOOK_AUTHOR);
         bookDto.setIsbn(BOOK_ISBN);
         bookDto.setPrice(BOOK_PRICE);
-        bookDto.setCategoryIds(categoriesId);
+        bookDto.setCategoryIds(Set.of(FIRST_ID));
 
         requestDto.setTitle(BOOK_TITLE);
         requestDto.setAuthor(BOOK_AUTHOR);
@@ -83,15 +101,9 @@ class BookControllerTest {
         requestDto.setPrice(BOOK_PRICE);
         requestDto.setCategories(categories);
 
-        mockMvc = MockMvcBuilders
-                .webAppContextSetup(applicationContext)
-                .apply(springSecurity())
-                .build();
         try (Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(true);
             List<String> scriptPaths = List.of(
-                    "database/books/delete-all-books-from-books-table.sql",
-                    "database/categories/delete-all-categories-from-categories-table.sql",
                     "database/categories/add-category-to-categories-table.sql",
                     "database/books/add-book-to-books-table.sql",
                     "database/categories/add-category-for-books_categories-table.sql"
@@ -102,17 +114,33 @@ class BookControllerTest {
         }
     }
 
+    @AfterEach
+    public void afterEach(@Autowired DataSource dataSource) throws SQLException {
+        try (Connection connection = dataSource.getConnection()) {
+            connection.setAutoCommit(true);
+            List<String> scriptPaths = List.of(
+                    "database/categories/delete-all-categories-from-categories-table.sql",
+                    "database/books/delete-all-books-from-books-table.sql"
+            );
+            for (String scriptPath : scriptPaths) {
+                ScriptUtils.executeSqlScript(connection, new ClassPathResource(scriptPath));
+            }
+        }
+    }
+
     @Test
-    @Sql(scripts = "classpath:database/books/delete-all-books-from-books-table.sql",
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = {"classpath:database/books/delete-all-books-from-books-table.sql",
-            "classpath:database/books/add-book-to-books-table.sql",
-            "classpath:database/categories/add-category-for-books_categories-table.sql"},
-            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     @WithMockUser(roles = {"ADMIN"})
     @DisplayName("Create a new book")
-    void createBook_ValidRequestDto_Success() throws Exception {
-        String jsonRequest = objectMapper.writeValueAsString(requestDto);
+    void createBook_ValidRequestDto_ReturnCreateBookRequestDto() throws Exception {
+        // Given
+        CreateBookRequestDto saveRequestDto = new CreateBookRequestDto();
+        saveRequestDto.setTitle(BOOK_TITLE + UNIQUE_PARAM);
+        saveRequestDto.setAuthor(BOOK_AUTHOR + UNIQUE_PARAM);
+        saveRequestDto.setIsbn(BOOK_ISBN + UNIQUE_PARAM);
+        saveRequestDto.setPrice(BOOK_PRICE);
+        saveRequestDto.setCategories(categories);
+        String jsonRequest = objectMapper.writeValueAsString(saveRequestDto);
+        // When
         MvcResult result = mockMvc.perform(
                 post("/books")
                 .content(jsonRequest)
@@ -120,43 +148,29 @@ class BookControllerTest {
                 )
                 .andExpect(status().isCreated())
                 .andReturn();
+        // Then
         BookDto actual = objectMapper.readValue(
                 result.getResponse().getContentAsString(), BookDto.class);
-
-        EqualsBuilder.reflectionEquals(bookDto, actual);
+        EqualsBuilder.reflectionEquals(saveRequestDto, actual);
     }
 
     @Test
     @Sql(scripts = {"classpath:database/books/add-two-books-to-books-table.sql",
+            "classpath:database/categories/add-second-category-to-categories-table.sql",
             "classpath:database/categories/add-two-category-to-books_categories-table.sql"},
             executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = "classpath:database/books/delete-two-books-from-books-table.sql",
-            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     @WithMockUser(roles = {"USER"})
     @DisplayName("Get all books")
-    void getAllBooks_Success() throws Exception {
-        BookDto secondBookDto = new BookDto();
-        secondBookDto.setId(SECOND_ID);
-        secondBookDto.setTitle(BOOK_TITLE + UNIQUE_PARAM);
-        secondBookDto.setAuthor(BOOK_AUTHOR + UNIQUE_PARAM);
-        secondBookDto.setIsbn(BOOK_ISBN + UNIQUE_PARAM);
-        secondBookDto.setPrice(BOOK_PRICE);
-        secondBookDto.setCategoryIds(categoriesId);
-        BookDto thirdBookDto = new BookDto();
-        thirdBookDto.setId(THIRD_ID);
-        thirdBookDto.setTitle(UNIQUE_PARAM + BOOK_TITLE);
-        thirdBookDto.setAuthor(UNIQUE_PARAM + BOOK_AUTHOR);
-        thirdBookDto.setIsbn(UNIQUE_PARAM + BOOK_ISBN);
-        thirdBookDto.setPrice(BOOK_PRICE);
-        thirdBookDto.setCategoryIds(categoriesId);
-        List<BookDto> expected = List.of(bookDto, secondBookDto, thirdBookDto);
-
+    void getAllBooks_ReturnListBookDto() throws Exception {
+        // Given
+        List<BookDto> expected = createCategoriesDto();
+        // When
         MvcResult result = mockMvc.perform(
                 get("/books")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
-
+        // Then
         BookDto[] actual = objectMapper.readValue(
                 result.getResponse().getContentAsByteArray(), BookDto[].class);
         List<BookDto> actualList = Arrays.stream(actual).toList();
@@ -168,25 +182,23 @@ class BookControllerTest {
     @Test
     @WithMockUser(roles = {"USER"})
     @DisplayName("Get book by id")
-    void getBookById_ValidId_Success() throws Exception {
+    void getBookById_ValidId_ReturnBookDto() throws Exception {
+        // When
         MvcResult result = mockMvc.perform(
                         get("/books/{id}", FIRST_ID))
                 .andExpect(status().isOk())
                 .andReturn();
+        // Then
         BookDto actual = objectMapper.readValue(
                 result.getResponse().getContentAsString(), BookDto.class);
-
         EqualsBuilder.reflectionEquals(bookDto, actual);
     }
 
     @Test
-    @Sql(scripts = {"classpath:database/books/delete-all-books-from-books-table.sql",
-            "classpath:database/books/add-book-to-books-table.sql",
-            "classpath:database/categories/add-category-for-books_categories-table.sql"},
-            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     @WithMockUser(roles = {"ADMIN"})
     @DisplayName("Update book by id")
-    void updateBookById_ValidRequestDtoAndId_Success() throws Exception {
+    void updateBookById_ValidRequestDtoAndId_ReturnBookDto() throws Exception {
+        // Given
         CreateBookRequestDto updatedRequestDto = new CreateBookRequestDto();
         updatedRequestDto.setTitle(BOOK_TITLE + UPDATE_PARAM);
         updatedRequestDto.setAuthor(BOOK_AUTHOR + UPDATE_PARAM);
@@ -201,7 +213,7 @@ class BookControllerTest {
         updatedBookDto.setIsbn(BOOK_ISBN + UPDATE_PARAM);
         updatedBookDto.setPrice(BOOK_PRICE.add(BOOK_PRICE));
         String jsonRequest = objectMapper.writeValueAsString(updatedRequestDto);
-
+        // When
         MvcResult result = mockMvc.perform(
                         put("/books/{id}", FIRST_ID)
                                 .content(jsonRequest)
@@ -209,6 +221,7 @@ class BookControllerTest {
                 )
                 .andExpect(status().isOk())
                 .andReturn();
+        // Then
         BookDto actual = objectMapper.readValue(
                 result.getResponse().getContentAsString(), BookDto.class);
 
@@ -216,15 +229,31 @@ class BookControllerTest {
     }
 
     @Test
-    @Sql(scripts = {"classpath:database/books/delete-all-books-from-books-table.sql",
-            "classpath:database/books/add-book-to-books-table.sql",
-            "classpath:database/categories/add-category-for-books_categories-table.sql"},
-            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     @WithMockUser(roles = {"ADMIN"})
     @DisplayName("Delete book by id")
-    void deleteBookById_ValidId_Success() throws Exception {
+    void deleteBookById_ValidId_CallDeleteMethodOnce() throws Exception {
+        // When
         mockMvc.perform(
                 MockMvcRequestBuilders.delete("/books/{id}", FIRST_ID))
                 .andExpect(status().isNoContent());
+    }
+
+    private List<BookDto> createCategoriesDto() {
+        Set<Long> categoriesId = Set.of(SECOND_ID);
+        BookDto secondBookDto = new BookDto();
+        secondBookDto.setId(SECOND_ID);
+        secondBookDto.setTitle(BOOK_TITLE + UNIQUE_PARAM);
+        secondBookDto.setAuthor(BOOK_AUTHOR + UNIQUE_PARAM);
+        secondBookDto.setIsbn(BOOK_ISBN + UNIQUE_PARAM);
+        secondBookDto.setPrice(BOOK_PRICE);
+        secondBookDto.setCategoryIds(categoriesId);
+        BookDto thirdBookDto = new BookDto();
+        thirdBookDto.setId(THIRD_ID);
+        thirdBookDto.setTitle(UNIQUE_PARAM + BOOK_TITLE);
+        thirdBookDto.setAuthor(UNIQUE_PARAM + BOOK_AUTHOR);
+        thirdBookDto.setIsbn(UNIQUE_PARAM + BOOK_ISBN);
+        thirdBookDto.setPrice(BOOK_PRICE);
+        thirdBookDto.setCategoryIds(categoriesId);
+        return List.of(bookDto, secondBookDto, thirdBookDto);
     }
 }

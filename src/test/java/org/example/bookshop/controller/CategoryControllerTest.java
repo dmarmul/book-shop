@@ -16,9 +16,10 @@ import java.util.stream.IntStream;
 import javax.sql.DataSource;
 import org.example.bookshop.dto.BookDtoWithoutCategoryIds;
 import org.example.bookshop.dto.CategoryDto;
-import org.example.bookshop.repository.CategoryRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,17 +54,11 @@ class CategoryControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
-    @Autowired
-    private CategoryRepository categoryRepository;
 
     @BeforeAll
-    public static void beforeAll(
-            @Autowired DataSource dataSource,
-            @Autowired WebApplicationContext applicationContext
-    ) throws SQLException {
-        categoryDto.setName(CATEGORY_NAME);
-        categoryDto.setDescription(CATEGORY_DESCRIPTION);
-
+    public static void beforeAll(@Autowired DataSource dataSource,
+                                 @Autowired WebApplicationContext applicationContext)
+            throws SQLException {
         mockMvc = MockMvcBuilders
                 .webAppContextSetup(applicationContext)
                 .apply(springSecurity())
@@ -72,7 +67,7 @@ class CategoryControllerTest {
             connection.setAutoCommit(true);
             List<String> scriptPaths = List.of(
                     "database/categories/delete-all-categories-from-categories-table.sql",
-                    "database/categories/add-category-to-categories-table.sql"
+                    "database/books/delete-all-books-from-books-table.sql"
             );
             for (String scriptPath : scriptPaths) {
                 ScriptUtils.executeSqlScript(connection, new ClassPathResource(scriptPath));
@@ -80,16 +75,37 @@ class CategoryControllerTest {
         }
     }
 
+    @BeforeEach
+    public void beforeEach(@Autowired DataSource dataSource) throws SQLException {
+        categoryDto.setName(CATEGORY_NAME);
+        categoryDto.setDescription(CATEGORY_DESCRIPTION);
+
+        try (Connection connection = dataSource.getConnection()) {
+            connection.setAutoCommit(true);
+            ScriptUtils.executeSqlScript(connection, new ClassPathResource(
+                    "database/categories/add-category-to-categories-table.sql"));
+        }
+    }
+
+    @AfterEach
+    public void afterEach(@Autowired DataSource dataSource) throws SQLException {
+        try (Connection connection = dataSource.getConnection()) {
+            connection.setAutoCommit(true);
+            ScriptUtils.executeSqlScript(connection, new ClassPathResource(
+                    "database/categories/delete-all-categories-from-categories-table.sql"));
+        }
+    }
+
     @Test
-    @Sql(scripts = "classpath:database/categories/delete-all-categories-from-categories-table.sql",
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = {"classpath:database/categories/delete-all-categories-from-categories-table.sql",
-            "classpath:database/categories/add-category-to-categories-table.sql"},
-            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     @WithMockUser(roles = {"ADMIN"})
     @DisplayName("Create a new category")
-    void createCategory_ValidRequestDto_Success() throws Exception {
-        String jsonRequest = objectMapper.writeValueAsString(categoryDto);
+    void createCategory_ValidRequestDto_ReturnCategoryDto() throws Exception {
+        // Given
+        CategoryDto insertCategoryDto = new CategoryDto();
+        insertCategoryDto.setName(CATEGORY_NAME + UNIQUE_PARAM);
+        insertCategoryDto.setDescription(CATEGORY_DESCRIPTION + UNIQUE_PARAM);
+        String jsonRequest = objectMapper.writeValueAsString(insertCategoryDto);
+        // When
         MvcResult result = mockMvc.perform(
                 post("/categories")
                         .content(jsonRequest)
@@ -97,27 +113,27 @@ class CategoryControllerTest {
                 )
                 .andExpect(status().isCreated())
                 .andReturn();
+        // Then
         CategoryDto actual = objectMapper.readValue(
                 result.getResponse().getContentAsString(), CategoryDto.class);
-        EqualsBuilder.reflectionEquals(categoryDto, actual);
+        EqualsBuilder.reflectionEquals(insertCategoryDto, actual);
     }
 
     @Test
     @Sql(scripts = "classpath:database/categories/add-two-categories-to-categories-table.sql",
             executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = "classpath:database/categories/delete-two-categories-from-categories-table.sql",
-            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     @WithMockUser(roles = {"USER"})
     @DisplayName("Get all categories")
-    void getAllCategories_Success() throws Exception {
+    void getAllCategories_ReturnListCategoryDto() throws Exception {
+        // Given
         List<CategoryDto> expected = createCategoriesDto();
-
+        // When
         MvcResult result = mockMvc.perform(
                         get("/categories")
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
-
+        // Then
         CategoryDto[] actual = objectMapper.readValue(
                 result.getResponse().getContentAsByteArray(), CategoryDto[].class);
         List<CategoryDto> actualList = Arrays.stream(actual).toList();
@@ -129,36 +145,37 @@ class CategoryControllerTest {
     @Test
     @WithMockUser(roles = {"USER"})
     @DisplayName("Get category by id")
-    void getCategoryById_ValidId_Success() throws Exception {
+    void getCategoryById_ValidId_ReturnCategoryDto() throws Exception {
+        // When
         MvcResult result = mockMvc.perform(
                         get("/categories/{id}", FIRST_ID))
                 .andExpect(status().isOk())
                 .andReturn();
+        // Then
         CategoryDto actual = objectMapper.readValue(
                 result.getResponse().getContentAsString(), CategoryDto.class);
-
         EqualsBuilder.reflectionEquals(categoryDto, actual);
     }
 
     @Test
-    @Sql(scripts = {"classpath:database/books/delete-all-books-from-books-table.sql",
-            "classpath:database/books/add-two-books-to-books-table.sql",
+    @Sql(scripts = {"classpath:database/books/add-two-books-to-books-table.sql",
+            "classpath:database/categories/add-second-category-to-categories-table.sql",
             "classpath:database/categories/add-two-category-to-books_categories-table.sql"},
             executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = {"classpath:database/books/delete-two-books-from-books-table.sql",
-            "classpath:database/categories/delete-two-categories-from-categories-table.sql"},
+    @Sql(scripts = "classpath:database/books/delete-all-books-from-books-table.sql",
             executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     @WithMockUser(roles = {"USER"})
     @DisplayName("Get books by category id")
-    void getBooksByCategoryId_ValidId_Success() throws Exception {
+    void getBooksByCategoryId_ValidId_ReturnListBookDtoWithoutCategoryIds() throws Exception {
+        // Given
         List<BookDtoWithoutCategoryIds> expected = getCategoryIds();
-
+        // When
         MvcResult result = mockMvc.perform(
-                        get("/categories/{id}/books", FIRST_ID)
+                        get("/categories/{id}/books", SECOND_ID)
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
-
+        // Then
         BookDtoWithoutCategoryIds[] actual = objectMapper.readValue(
                 result.getResponse().getContentAsByteArray(), BookDtoWithoutCategoryIds[].class);
         List<BookDtoWithoutCategoryIds> actualList = Arrays.stream(actual).toList();
@@ -168,18 +185,15 @@ class CategoryControllerTest {
     }
 
     @Test
-    @Sql(scripts = {"classpath:database/categories/delete-category-from-categories-table.sql",
-            "classpath:database/categories/add-category-to-categories-table.sql"},
-            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     @WithMockUser(roles = {"ADMIN"})
     @DisplayName("Update category by id")
-    void updateCategoryById_ValidRequestDtoAndId_Success() throws Exception {
+    void updateCategoryById_ValidRequestDtoAndId_ReturnCategoryDto() throws Exception {
+        // Given
         CategoryDto updatedCategoryDto = new CategoryDto();
         updatedCategoryDto.setName(CATEGORY_NAME + UPDATE_PARAM);
         updatedCategoryDto.setDescription(CATEGORY_DESCRIPTION + UPDATE_PARAM);
-
         String jsonRequest = objectMapper.writeValueAsString(updatedCategoryDto);
-
+        // When
         MvcResult result = mockMvc.perform(
                         put("/categories/{id}", FIRST_ID)
                                 .content(jsonRequest)
@@ -187,19 +201,17 @@ class CategoryControllerTest {
                 )
                 .andExpect(status().isOk())
                 .andReturn();
+        // Then
         CategoryDto actual = objectMapper.readValue(
                 result.getResponse().getContentAsString(), CategoryDto.class);
-
         EqualsBuilder.reflectionEquals(updatedCategoryDto, actual);
     }
 
     @Test
-    @Sql(scripts = {"classpath:database/categories/delete-all-categories-from-categories-table.sql",
-            "classpath:database/categories/add-category-to-categories-table.sql"},
-            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     @WithMockUser(roles = {"ADMIN"})
     @DisplayName("Delete category by id")
-    void deleteCategoryById_ValidId_Success() throws Exception {
+    void deleteCategoryById_ValidId_CallDeleteMethodOnce() throws Exception {
+        // When
         mockMvc.perform(
                         MockMvcRequestBuilders.delete("/categories/{id}", FIRST_ID))
                 .andExpect(status().isNoContent());
