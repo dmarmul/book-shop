@@ -75,7 +75,7 @@ class BookServiceTest {
     }
 
     @Test
-    @DisplayName("verify save() method works")
+    @DisplayName("Save valid book to DB")
     public void saveBook_ValidRequestDto_ReturnBookDto() {
         // When
         when(bookMapper.toModel(requestDto)).thenReturn(book);
@@ -89,6 +89,7 @@ class BookServiceTest {
     }
 
     @Test
+    @DisplayName("Find book by valid id")
     void findById_ValidBookId_ReturnBookDto() {
         // Given
         Optional<Book> optionalBook = Optional.of(book);
@@ -103,6 +104,7 @@ class BookServiceTest {
     }
 
     @Test
+    @DisplayName("Throw an exception because of non existing book id")
     void findById_NonExistingBookId_ThrowException() {
         // Given
         String expected = EXCEPTION_MESSAGE + NON_EXISTING_BOOK_ID;
@@ -116,6 +118,7 @@ class BookServiceTest {
     }
 
     @Test
+    @DisplayName("Find all existing books in DB")
     void findAll_ReturnListBookDto() {
         // Given
         Book secondBook = new Book();
@@ -144,6 +147,7 @@ class BookServiceTest {
     }
 
     @Test
+    @DisplayName("Update book by valid id")
     void updateById_ValidBookId_ReturnBookDto() {
         // Given
         CreateBookRequestDto updateRequestDto = new CreateBookRequestDto();
@@ -178,6 +182,7 @@ class BookServiceTest {
     }
 
     @Test
+    @DisplayName("Throw an exception because of non existing book id")
     void updateByI_NonExistingBookId_ThrowException() {
         // Given
         String expected = EXCEPTION_MESSAGE + NON_EXISTING_BOOK_ID;
@@ -191,6 +196,7 @@ class BookServiceTest {
     }
 
     @Test
+    @DisplayName("Delete book by id")
     void deleteById_ValidBookId_CallDeleteMethodOnce() {
         // When
         bookService.delete(BOOK_ID);
@@ -199,6 +205,7 @@ class BookServiceTest {
     }
 
     @Test
+    @DisplayName("Find all books with same category id in DB")
     void findAllByCategoryId_ReturnListBookDtoWithoutCategoryIds() {
         // Given
         Book secondBook = new Book();

@@ -17,6 +17,7 @@ import org.example.bookshop.model.Category;
 import org.example.bookshop.repository.CategoryRepository;
 import org.example.bookshop.service.impl.CategoryServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -51,6 +52,7 @@ class CategoryServiceTest {
     }
 
     @Test
+    @DisplayName("Save valid category to DB")
     void saveCategory_ValidRequestDto_ReturnCategoryDto() {
         // When
         when(categoryMapper.toModel(categoryDto)).thenReturn(category);
@@ -64,6 +66,7 @@ class CategoryServiceTest {
     }
 
     @Test
+    @DisplayName("Find all existing categories in DB")
     void findAll_ReturnListCategoryDto() {
         // Given
         Optional<Category> optionalCategory = Optional.of(category);
@@ -78,6 +81,7 @@ class CategoryServiceTest {
     }
 
     @Test
+    @DisplayName("Find category by valid id")
     void findById_ValidCategoryId_ReturnCategoryDto() {
         // Given
         Optional<Category> optionalCategory = Optional.of(category);
@@ -92,6 +96,7 @@ class CategoryServiceTest {
     }
 
     @Test
+    @DisplayName("Throw an exception because of non existing category id")
     void findById_NonExistingCategoryId_ThrowException() {
         // Given
         String expected = EXCEPTION_MESSAGE + NON_EXISTING_CATEGORY_ID;
@@ -105,6 +110,7 @@ class CategoryServiceTest {
     }
 
     @Test
+    @DisplayName("Update category by valid id")
     void updateById_ValidCategoryId_ReturnCategoryDto() {
         // Given
         CategoryDto updateCategoryDto = new CategoryDto();
@@ -132,6 +138,7 @@ class CategoryServiceTest {
     }
 
     @Test
+    @DisplayName("Throw an exception because of non existing category id")
     void updateById_NonExistingCategoryId_ThrowException() {
         // Given
         String expected = EXCEPTION_MESSAGE + NON_EXISTING_CATEGORY_ID;
