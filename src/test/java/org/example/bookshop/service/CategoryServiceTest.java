@@ -1,6 +1,11 @@
 package org.example.bookshop.service;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.example.bookshop.util.TestUtil.CATEGORY_DESCRIPTION;
+import static org.example.bookshop.util.TestUtil.CATEGORY_NAME;
+import static org.example.bookshop.util.TestUtil.FIRST_ID;
+import static org.example.bookshop.util.TestUtil.THIRD_ID;
+import static org.example.bookshop.util.TestUtil.UNIQUE_PARAM;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doAnswer;
@@ -16,6 +21,7 @@ import org.example.bookshop.mapper.CategoryMapper;
 import org.example.bookshop.model.Category;
 import org.example.bookshop.repository.CategoryRepository;
 import org.example.bookshop.service.impl.CategoryServiceImpl;
+import org.example.bookshop.util.TestUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,13 +34,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class CategoryServiceTest {
     private static final CategoryDto categoryDto = new CategoryDto();
     private static final Category category = new Category();
-    private static final Long CATEGORY_ID = 1L;
-    private static final Long NON_EXISTING_CATEGORY_ID = 100L;
-    private static final String CATEGORY_NAME = "Category 1";
-    private static final String CATEGORY_DESCRIPTION = "Description 1";
     private static final String EXCEPTION_MESSAGE = "Can't find category by id: ";
-    private static final String UPDATE_NAME = "new name";
-    private static final String UPDATE_DESCRIPTION = "new description";
 
     @InjectMocks
     private CategoryServiceImpl categoryService;
@@ -47,8 +47,7 @@ class CategoryServiceTest {
 
     @BeforeEach
     void beforeEach() {
-        categoryDto.setName(CATEGORY_NAME);
-        categoryDto.setDescription(CATEGORY_DESCRIPTION);
+        TestUtil.setCategoryDtoParam(categoryDto);
     }
 
     @Test
@@ -71,12 +70,12 @@ class CategoryServiceTest {
         // Given
         Optional<Category> optionalCategory = Optional.of(category);
         // When
-        when(categoryRepository.findById(CATEGORY_ID)).thenReturn(optionalCategory);
+        when(categoryRepository.findById(FIRST_ID)).thenReturn(optionalCategory);
         when(categoryMapper.toDto(optionalCategory.get())).thenReturn(categoryDto);
-        CategoryDto actualCategory = categoryService.findById(CATEGORY_ID);
+        CategoryDto actualCategory = categoryService.findById(FIRST_ID);
         // Then
         assertThat(actualCategory).isEqualTo(categoryDto);
-        verify(categoryRepository, times(1)).findById(CATEGORY_ID);
+        verify(categoryRepository, times(1)).findById(FIRST_ID);
         verifyNoMoreInteractions(categoryRepository, categoryMapper);
     }
 
@@ -86,12 +85,12 @@ class CategoryServiceTest {
         // Given
         Optional<Category> optionalCategory = Optional.of(category);
         // When
-        when(categoryRepository.findById(CATEGORY_ID)).thenReturn(optionalCategory);
+        when(categoryRepository.findById(FIRST_ID)).thenReturn(optionalCategory);
         when(categoryMapper.toDto(optionalCategory.get())).thenReturn(categoryDto);
-        CategoryDto actualCategory = categoryService.findById(CATEGORY_ID);
+        CategoryDto actualCategory = categoryService.findById(FIRST_ID);
         // Then
         assertThat(actualCategory).isEqualTo(categoryDto);
-        verify(categoryRepository, times(1)).findById(CATEGORY_ID);
+        verify(categoryRepository, times(1)).findById(FIRST_ID);
         verifyNoMoreInteractions(categoryRepository, categoryMapper);
     }
 
@@ -99,11 +98,11 @@ class CategoryServiceTest {
     @DisplayName("Throw an exception because of non existing category id")
     void findById_NonExistingCategoryId_ThrowException() {
         // Given
-        String expected = EXCEPTION_MESSAGE + NON_EXISTING_CATEGORY_ID;
+        String expected = EXCEPTION_MESSAGE + THIRD_ID;
         // When
-        when(categoryRepository.findById(NON_EXISTING_CATEGORY_ID)).thenReturn(Optional.empty());
+        when(categoryRepository.findById(THIRD_ID)).thenReturn(Optional.empty());
         Exception exception = assertThrows(EntityNotFoundException.class,
-                () -> categoryService.findById(NON_EXISTING_CATEGORY_ID)
+                () -> categoryService.findById(THIRD_ID)
         );
         // Then
         assertEquals(expected, exception.getMessage());
@@ -114,23 +113,23 @@ class CategoryServiceTest {
     void updateById_ValidCategoryId_ReturnCategoryDto() {
         // Given
         CategoryDto updateCategoryDto = new CategoryDto();
-        updateCategoryDto.setName(UPDATE_NAME);
-        updateCategoryDto.setDescription(UPDATE_DESCRIPTION);
+        updateCategoryDto.setName(CATEGORY_NAME + UNIQUE_PARAM);
+        updateCategoryDto.setDescription(CATEGORY_DESCRIPTION + UNIQUE_PARAM);
         Category updateCategory = new Category();
         // When
-        when(categoryRepository.findById(CATEGORY_ID)).thenReturn(Optional.of(updateCategory));
+        when(categoryRepository.findById(FIRST_ID)).thenReturn(Optional.of(updateCategory));
         doAnswer(invocation -> {
-            updateCategory.setName(UPDATE_NAME);
-            updateCategory.setDescription(UPDATE_DESCRIPTION);
+            updateCategory.setName(CATEGORY_NAME + UNIQUE_PARAM);
+            updateCategory.setDescription(CATEGORY_DESCRIPTION + UNIQUE_PARAM);
             return null;
         }).when(categoryMapper).updateCategoryFromDto(updateCategoryDto, updateCategory);
         when(categoryRepository.save(updateCategory)).thenReturn(updateCategory);
         when(categoryMapper.toDto(updateCategory)).thenReturn(updateCategoryDto);
 
-        CategoryDto actualCategory = categoryService.update(updateCategoryDto, CATEGORY_ID);
+        CategoryDto actualCategory = categoryService.update(updateCategoryDto, FIRST_ID);
 
         assertThat(actualCategory).isEqualTo(updateCategoryDto);
-        verify(categoryRepository, times(1)).findById(CATEGORY_ID);
+        verify(categoryRepository, times(1)).findById(FIRST_ID);
         verify(categoryRepository, times(1)).save(updateCategory);
         verify(categoryMapper, times(1)).updateCategoryFromDto(updateCategoryDto, updateCategory);
         verify(categoryMapper, times(1)).toDto(updateCategory);
@@ -141,11 +140,11 @@ class CategoryServiceTest {
     @DisplayName("Throw an exception because of non existing category id")
     void updateById_NonExistingCategoryId_ThrowException() {
         // Given
-        String expected = EXCEPTION_MESSAGE + NON_EXISTING_CATEGORY_ID;
+        String expected = EXCEPTION_MESSAGE + THIRD_ID;
         // When
-        when(categoryRepository.findById(NON_EXISTING_CATEGORY_ID)).thenReturn(Optional.empty());
+        when(categoryRepository.findById(THIRD_ID)).thenReturn(Optional.empty());
         Exception exception = assertThrows(EntityNotFoundException.class,
-                () -> categoryService.update(categoryDto, NON_EXISTING_CATEGORY_ID)
+                () -> categoryService.update(categoryDto, THIRD_ID)
         );
         // Then
         assertEquals(expected, exception.getMessage());

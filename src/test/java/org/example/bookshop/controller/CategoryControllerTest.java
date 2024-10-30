@@ -1,18 +1,27 @@
 package org.example.bookshop.controller;
 
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.example.bookshop.util.TestUtil.BOOK_AUTHOR;
+import static org.example.bookshop.util.TestUtil.BOOK_ISBN;
+import static org.example.bookshop.util.TestUtil.BOOK_PRICE;
+import static org.example.bookshop.util.TestUtil.BOOK_TITLE;
+import static org.example.bookshop.util.TestUtil.CATEGORY_DESCRIPTION;
+import static org.example.bookshop.util.TestUtil.CATEGORY_NAME;
+import static org.example.bookshop.util.TestUtil.FIRST_ID;
+import static org.example.bookshop.util.TestUtil.SECOND_ID;
+import static org.example.bookshop.util.TestUtil.THIRD_ID;
+import static org.example.bookshop.util.TestUtil.UNIQUE_PARAM;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 import org.example.bookshop.dto.BookDtoWithoutCategoryIds;
 import org.example.bookshop.dto.CategoryDto;
+import org.example.bookshop.util.TestUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,30 +35,22 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.testcontainers.shaded.org.apache.commons.lang3.builder.EqualsBuilder;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Sql(scripts = {"classpath:database/categories/delete-all-categories-from-categories-table.sql",
-        "classpath:database/books/delete-all-books-from-books-table.sql",
-        "classpath:database/categories/add-three-categories-to-categories-table.sql",
+        "classpath:database/books/delete-all-books-from-books-table.sql"},
+        executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
+@Sql(scripts = {"classpath:database/categories/add-three-categories-to-categories-table.sql",
         "classpath:database/books/add-three-books-to-books-table.sql",
         "classpath:database/categories/add-three-categories-to-books_categories-table.sql"},
         executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(scripts = {"classpath:database/categories/delete-all-categories-from-categories-table.sql",
+        "classpath:database/books/delete-all-books-from-books-table.sql"},
+        executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 class CategoryControllerTest {
     protected static MockMvc mockMvc;
-    private static final BigDecimal BOOK_PRICE = BigDecimal.valueOf(200);
-    private static final Long FIRST_ID = 1L;
-    private static final Long SECOND_ID = 2L;
-    private static final Long THIRD_ID = 3L;
-    private static final String CATEGORY_NAME = "Category 1";
-    private static final String CATEGORY_DESCRIPTION = "Description 1";
-    private static final String BOOK_TITLE = "Book 1";
-    private static final String BOOK_AUTHOR = "Author 1";
-    private static final String BOOK_ISBN = "ISBN 1";
-    private static final String UNIQUE_PARAM = "unique";
-    private static final String NEW_CATEGORY_PARAM = "new param";
     private static final CategoryDto categoryDto = new CategoryDto();
 
     @Autowired
@@ -57,16 +58,12 @@ class CategoryControllerTest {
 
     @BeforeAll
     public static void beforeAll(@Autowired WebApplicationContext applicationContext) {
-        mockMvc = MockMvcBuilders
-                .webAppContextSetup(applicationContext)
-                .apply(springSecurity())
-                .build();
+        mockMvc = TestUtil.buildMockMvc(applicationContext);
     }
 
     @BeforeEach
     public void beforeEach() {
-        categoryDto.setName(CATEGORY_NAME);
-        categoryDto.setDescription(CATEGORY_DESCRIPTION);
+        TestUtil.setCategoryDtoParam(categoryDto);
     }
 
     @Test
@@ -74,10 +71,8 @@ class CategoryControllerTest {
     @DisplayName("Create a new category")
     void createCategory_ValidRequestDto_ReturnCategoryDto() throws Exception {
         // Given
-        CategoryDto insertCategoryDto = new CategoryDto();
-        insertCategoryDto.setName(CATEGORY_NAME + NEW_CATEGORY_PARAM);
-        insertCategoryDto.setDescription(CATEGORY_DESCRIPTION + NEW_CATEGORY_PARAM);
-        String jsonRequest = objectMapper.writeValueAsString(insertCategoryDto);
+        CategoryDto newCategoryDto = TestUtil.createNewCategoryDto();
+        String jsonRequest = objectMapper.writeValueAsString(newCategoryDto);
         // When
         MvcResult result = mockMvc.perform(
                 post("/categories")
@@ -89,7 +84,7 @@ class CategoryControllerTest {
         // Then
         CategoryDto actual = objectMapper.readValue(
                 result.getResponse().getContentAsString(), CategoryDto.class);
-        EqualsBuilder.reflectionEquals(insertCategoryDto, actual);
+        EqualsBuilder.reflectionEquals(newCategoryDto, actual);
     }
 
     @Test
@@ -133,7 +128,7 @@ class CategoryControllerTest {
     @DisplayName("Get books by valid category id")
     void getBooksByCategoryId_ValidId_ReturnListBookDtoWithoutCategoryIds() throws Exception {
         // Given
-        List<BookDtoWithoutCategoryIds> expected = getCategoryIds();
+        List<BookDtoWithoutCategoryIds> expected = getBookDtoWithoutCategoryIds();
         // When
         MvcResult result = mockMvc.perform(
                         get("/categories/{id}/books", SECOND_ID)
@@ -154,9 +149,7 @@ class CategoryControllerTest {
     @DisplayName("Update category by valid id")
     void updateCategoryById_ValidRequestDtoAndId_ReturnCategoryDto() throws Exception {
         // Given
-        CategoryDto updatedCategoryDto = new CategoryDto();
-        updatedCategoryDto.setName(CATEGORY_NAME + NEW_CATEGORY_PARAM);
-        updatedCategoryDto.setDescription(CATEGORY_DESCRIPTION + NEW_CATEGORY_PARAM);
+        CategoryDto updatedCategoryDto = TestUtil.createNewCategoryDto();
         String jsonRequest = objectMapper.writeValueAsString(updatedCategoryDto);
         // When
         MvcResult result = mockMvc.perform(
@@ -182,22 +175,22 @@ class CategoryControllerTest {
                 .andExpect(status().isNoContent());
     }
 
-    private List<BookDtoWithoutCategoryIds> getCategoryIds() {
-        BookDtoWithoutCategoryIds bookDto = new BookDtoWithoutCategoryIds();
-        bookDto.setId(SECOND_ID);
-        bookDto.setTitle(BOOK_TITLE + UNIQUE_PARAM);
-        bookDto.setAuthor(BOOK_AUTHOR + UNIQUE_PARAM);
-        bookDto.setIsbn(BOOK_ISBN + UNIQUE_PARAM);
-        bookDto.setPrice(BOOK_PRICE);
-
+    private List<BookDtoWithoutCategoryIds> getBookDtoWithoutCategoryIds() {
         BookDtoWithoutCategoryIds secondBookDto = new BookDtoWithoutCategoryIds();
-        secondBookDto.setId(THIRD_ID);
-        secondBookDto.setTitle(UNIQUE_PARAM + BOOK_TITLE);
-        secondBookDto.setAuthor(UNIQUE_PARAM + BOOK_AUTHOR);
-        secondBookDto.setIsbn(UNIQUE_PARAM + BOOK_ISBN);
+        secondBookDto.setId(SECOND_ID);
+        secondBookDto.setTitle(BOOK_TITLE + UNIQUE_PARAM);
+        secondBookDto.setAuthor(BOOK_AUTHOR + UNIQUE_PARAM);
+        secondBookDto.setIsbn(BOOK_ISBN + UNIQUE_PARAM);
         secondBookDto.setPrice(BOOK_PRICE);
 
-        return List.of(bookDto, secondBookDto);
+        BookDtoWithoutCategoryIds thirdBookDto = new BookDtoWithoutCategoryIds();
+        thirdBookDto.setId(THIRD_ID);
+        thirdBookDto.setTitle(UNIQUE_PARAM + BOOK_TITLE);
+        thirdBookDto.setAuthor(UNIQUE_PARAM + BOOK_AUTHOR);
+        thirdBookDto.setIsbn(UNIQUE_PARAM + BOOK_ISBN);
+        thirdBookDto.setPrice(BOOK_PRICE);
+
+        return List.of(secondBookDto, thirdBookDto);
     }
 
     private List<CategoryDto> createCategoriesDto() {
@@ -205,6 +198,7 @@ class CategoryControllerTest {
         secondCategoryDto.setId(SECOND_ID);
         secondCategoryDto.setName(CATEGORY_NAME + UNIQUE_PARAM);
         secondCategoryDto.setDescription(CATEGORY_DESCRIPTION + UNIQUE_PARAM);
+
         CategoryDto thirdCategoryDto = new CategoryDto();
         thirdCategoryDto.setId(THIRD_ID);
         thirdCategoryDto.setName(UNIQUE_PARAM + CATEGORY_NAME);

@@ -1,6 +1,13 @@
 package org.example.bookshop.service;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.example.bookshop.util.TestUtil.BOOK_AUTHOR;
+import static org.example.bookshop.util.TestUtil.BOOK_ISBN;
+import static org.example.bookshop.util.TestUtil.BOOK_TITLE;
+import static org.example.bookshop.util.TestUtil.FIRST_ID;
+import static org.example.bookshop.util.TestUtil.SECOND_ID;
+import static org.example.bookshop.util.TestUtil.THIRD_ID;
+import static org.example.bookshop.util.TestUtil.UNIQUE_PARAM;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doAnswer;
@@ -37,17 +44,7 @@ class BookServiceTest {
     private static final BookDto bookDto = new BookDto();
     private static final Book book = new Book();
     private static final CreateBookRequestDto requestDto = new CreateBookRequestDto();
-    private static final Long BOOK_ID = 1L;
-    private static final Long BOOK_SECOND_ID = 2L;
-    private static final Long CATEGORY_ID = 2L;
-    private static final Long NON_EXISTING_BOOK_ID = 100L;
-    private static final String TITLE = "title";
-    private static final String AUTHOR = "author";
-    private static final String ISBN = "isbn";
     private static final String EXCEPTION_MESSAGE = "Can't find book by id: ";
-    private static final String UPDATE_TITLE = "new title";
-    private static final String UPDATE_AUTHOR = "new author";
-    private static final String UPDATE_ISBN = "new isbn";
 
     @InjectMocks
     private BookServiceImpl bookService;
@@ -60,15 +57,15 @@ class BookServiceTest {
 
     @BeforeEach
     void beforeEach() {
-        requestDto.setTitle(TITLE);
-        requestDto.setAuthor(AUTHOR);
-        requestDto.setIsbn(ISBN);
+        requestDto.setTitle(BOOK_TITLE);
+        requestDto.setAuthor(BOOK_AUTHOR);
+        requestDto.setIsbn(BOOK_ISBN);
 
         book.setTitle(requestDto.getTitle());
         book.setAuthor(requestDto.getAuthor());
         book.setIsbn(requestDto.getIsbn());
 
-        bookDto.setId(BOOK_ID);
+        bookDto.setId(FIRST_ID);
         bookDto.setTitle(book.getTitle());
         bookDto.setAuthor(book.getAuthor());
         bookDto.setIsbn(book.getIsbn());
@@ -94,12 +91,12 @@ class BookServiceTest {
         // Given
         Optional<Book> optionalBook = Optional.of(book);
         // When
-        when(bookRepository.findById(BOOK_ID)).thenReturn(optionalBook);
+        when(bookRepository.findById(FIRST_ID)).thenReturn(optionalBook);
         when(bookMapper.toDto(optionalBook.get())).thenReturn(bookDto);
-        BookDto actualBook = bookService.findById(BOOK_ID);
+        BookDto actualBook = bookService.findById(FIRST_ID);
         // Then
         assertThat(actualBook).isEqualTo(bookDto);
-        verify(bookRepository, times(1)).findById(BOOK_ID);
+        verify(bookRepository, times(1)).findById(FIRST_ID);
         verifyNoMoreInteractions(bookRepository, bookMapper);
     }
 
@@ -107,11 +104,11 @@ class BookServiceTest {
     @DisplayName("Throw an exception because of non existing book id")
     void findById_NonExistingBookId_ThrowException() {
         // Given
-        String expected = EXCEPTION_MESSAGE + NON_EXISTING_BOOK_ID;
+        String expected = EXCEPTION_MESSAGE + THIRD_ID;
         // When
-        when(bookRepository.findById(NON_EXISTING_BOOK_ID)).thenReturn(Optional.empty());
+        when(bookRepository.findById(THIRD_ID)).thenReturn(Optional.empty());
         Exception exception = assertThrows(EntityNotFoundException.class,
-                () -> bookService.findById(NON_EXISTING_BOOK_ID)
+                () -> bookService.findById(THIRD_ID)
         );
         // Then
         assertEquals(expected, exception.getMessage());
@@ -122,12 +119,12 @@ class BookServiceTest {
     void findAll_ReturnListBookDto() {
         // Given
         Book secondBook = new Book();
-        secondBook.setTitle(TITLE);
-        secondBook.setAuthor(AUTHOR);
-        secondBook.setIsbn(ISBN);
+        secondBook.setTitle(BOOK_TITLE);
+        secondBook.setAuthor(BOOK_AUTHOR);
+        secondBook.setIsbn(BOOK_ISBN);
 
         BookDto secondBookDto = new BookDto();
-        secondBookDto.setId(BOOK_SECOND_ID);
+        secondBookDto.setId(SECOND_ID);
         secondBookDto.setTitle(secondBook.getTitle());
         secondBookDto.setAuthor(secondBook.getAuthor());
         secondBookDto.setIsbn(secondBook.getIsbn());
@@ -150,33 +147,30 @@ class BookServiceTest {
     @DisplayName("Update book by valid id")
     void updateById_ValidBookId_ReturnBookDto() {
         // Given
-        CreateBookRequestDto updateRequestDto = new CreateBookRequestDto();
-        updateRequestDto.setTitle(UPDATE_TITLE);
-        updateRequestDto.setAuthor(UPDATE_AUTHOR);
-        updateRequestDto.setIsbn(UPDATE_ISBN);
+        requestDto.setTitle(BOOK_TITLE + UNIQUE_PARAM);
+        requestDto.setAuthor(BOOK_AUTHOR + UNIQUE_PARAM);
+        requestDto.setIsbn(BOOK_ISBN + UNIQUE_PARAM);
 
-        BookDto updatedBookDto = new BookDto();
-        updatedBookDto.setId(BOOK_SECOND_ID);
-        updatedBookDto.setTitle(updateRequestDto.getTitle());
-        updatedBookDto.setAuthor(updateRequestDto.getAuthor());
-        updatedBookDto.setIsbn(updateRequestDto.getIsbn());
+        bookDto.setTitle(requestDto.getTitle());
+        bookDto.setAuthor(requestDto.getAuthor());
+        bookDto.setIsbn(requestDto.getIsbn());
         Book updateBook = new Book();
         // When
-        when(bookRepository.findById(BOOK_ID)).thenReturn(Optional.of(updateBook));
+        when(bookRepository.findById(FIRST_ID)).thenReturn(Optional.of(updateBook));
         doAnswer(invocation -> {
-            updateBook.setTitle(updateRequestDto.getTitle());
-            updateBook.setAuthor(updateRequestDto.getAuthor());
-            updateBook.setIsbn(updateRequestDto.getIsbn());
+            updateBook.setTitle(bookDto.getTitle());
+            updateBook.setAuthor(bookDto.getAuthor());
+            updateBook.setIsbn(bookDto.getIsbn());
             return null;
-        }).when(bookMapper).updateBookFromDto(updateRequestDto, updateBook);
+        }).when(bookMapper).updateBookFromDto(requestDto, updateBook);
         when(bookRepository.save(updateBook)).thenReturn(updateBook);
-        when(bookMapper.toDto(updateBook)).thenReturn(updatedBookDto);
-        BookDto actualBook = bookService.update(updateRequestDto, BOOK_ID);
+        when(bookMapper.toDto(updateBook)).thenReturn(bookDto);
+        BookDto actualBook = bookService.update(requestDto, FIRST_ID);
         // Then
-        assertThat(actualBook).isEqualTo(updatedBookDto);
-        verify(bookRepository, times(1)).findById(BOOK_ID);
+        assertThat(actualBook).isEqualTo(bookDto);
+        verify(bookRepository, times(1)).findById(FIRST_ID);
         verify(bookRepository, times(1)).save(updateBook);
-        verify(bookMapper, times(1)).updateBookFromDto(updateRequestDto, updateBook);
+        verify(bookMapper, times(1)).updateBookFromDto(requestDto, updateBook);
         verify(bookMapper, times(1)).toDto(updateBook);
         verifyNoMoreInteractions(bookRepository, bookMapper);
     }
@@ -185,11 +179,11 @@ class BookServiceTest {
     @DisplayName("Throw an exception because of non existing book id")
     void updateByI_NonExistingBookId_ThrowException() {
         // Given
-        String expected = EXCEPTION_MESSAGE + NON_EXISTING_BOOK_ID;
+        String expected = EXCEPTION_MESSAGE + THIRD_ID;
         // When
-        when(bookRepository.findById(NON_EXISTING_BOOK_ID)).thenReturn(Optional.empty());
+        when(bookRepository.findById(THIRD_ID)).thenReturn(Optional.empty());
         Exception exception = assertThrows(EntityNotFoundException.class,
-                () -> bookService.update(requestDto, NON_EXISTING_BOOK_ID)
+                () -> bookService.update(requestDto, THIRD_ID)
         );
         // Then
         assertEquals(expected, exception.getMessage());
@@ -199,9 +193,9 @@ class BookServiceTest {
     @DisplayName("Delete book by id")
     void deleteById_ValidBookId_CallDeleteMethodOnce() {
         // When
-        bookService.delete(BOOK_ID);
+        bookService.delete(FIRST_ID);
         // Then
-        verify(bookRepository, times(1)).deleteById(BOOK_ID);
+        verify(bookRepository, times(1)).deleteById(FIRST_ID);
     }
 
     @Test
@@ -209,13 +203,13 @@ class BookServiceTest {
     void findAllByCategoryId_ReturnListBookDtoWithoutCategoryIds() {
         // Given
         Book secondBook = new Book();
-        secondBook.setTitle(TITLE);
-        secondBook.setAuthor(AUTHOR);
-        secondBook.setIsbn(ISBN);
+        secondBook.setTitle(BOOK_TITLE + UNIQUE_PARAM);
+        secondBook.setAuthor(BOOK_AUTHOR + UNIQUE_PARAM);
+        secondBook.setIsbn(BOOK_ISBN + UNIQUE_PARAM);
         List<BookDtoWithoutCategoryIds> booksDtoWithoutCategoryIds =
                 createBookDtoWithoutCategoryIdsList();
         // When
-        when(bookRepository.findAllByCategoriesId(CATEGORY_ID))
+        when(bookRepository.findAllByCategoriesId(SECOND_ID))
                 .thenReturn(List.of(book, secondBook));
         when(bookMapper.toDtoWithoutCategories(book))
                 .thenReturn(booksDtoWithoutCategoryIds.get(0));
@@ -224,25 +218,26 @@ class BookServiceTest {
 
         List<BookDtoWithoutCategoryIds> actualList = bookService
                 .findAllByCategoryId(Sort.by("id"),
-                        PageRequest.of(0, 2), CATEGORY_ID);
+                        PageRequest.of(0, 2), SECOND_ID);
         // Then
         assertThat(actualList).isEqualTo(booksDtoWithoutCategoryIds);
-        verify(bookRepository, times(1)).findAllByCategoriesId(CATEGORY_ID);
+        verify(bookRepository, times(1)).findAllByCategoriesId(SECOND_ID);
         verifyNoMoreInteractions(bookRepository, bookMapper);
     }
 
     private List<BookDtoWithoutCategoryIds> createBookDtoWithoutCategoryIdsList() {
         BookDtoWithoutCategoryIds firstBookDtoWithoutCategory = new BookDtoWithoutCategoryIds();
-        firstBookDtoWithoutCategory.setId(bookDto.getId());
-        firstBookDtoWithoutCategory.setTitle(bookDto.getTitle());
-        firstBookDtoWithoutCategory.setAuthor(bookDto.getAuthor());
-        firstBookDtoWithoutCategory.setIsbn(bookDto.getIsbn());
+        firstBookDtoWithoutCategory.setId(FIRST_ID);
+        firstBookDtoWithoutCategory.setTitle(BOOK_TITLE);
+        firstBookDtoWithoutCategory.setAuthor(BOOK_AUTHOR);
+        firstBookDtoWithoutCategory.setIsbn(BOOK_ISBN);
 
         BookDtoWithoutCategoryIds secondBookDtoWithoutCategory = new BookDtoWithoutCategoryIds();
-        secondBookDtoWithoutCategory.setId(BOOK_SECOND_ID);
-        secondBookDtoWithoutCategory.setTitle(TITLE);
-        secondBookDtoWithoutCategory.setAuthor(AUTHOR);
-        secondBookDtoWithoutCategory.setIsbn(ISBN);
+        secondBookDtoWithoutCategory.setId(SECOND_ID);
+        secondBookDtoWithoutCategory.setTitle(BOOK_TITLE + UNIQUE_PARAM);
+        secondBookDtoWithoutCategory.setAuthor(BOOK_AUTHOR + UNIQUE_PARAM);
+        secondBookDtoWithoutCategory.setIsbn(BOOK_ISBN + UNIQUE_PARAM);
+
         return List.of(firstBookDtoWithoutCategory, secondBookDtoWithoutCategory);
     }
 }
