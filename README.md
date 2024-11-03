@@ -186,6 +186,41 @@ taught me how to use liquibase and Docker and how to write tests for different a
 </details>
 </details>
 
+# 💻 Required technologies to get up and running the project
+- #### JDK 17(or higher)
+- #### IntelliJ IDEA
+- #### Maven
+- #### MySQL
+- #### Docker
+
+# 🛠️ How to clone the project and run
+- #### Clone project from gitHub
+```
+git clone https://github.com/dmarmul/book-shop.git
+``` 
+
+- #### Add .env file to root directory 
+<details>
+<summary>
+</summary>
+  <img src='image/envSettings.png'/>
+</details>
+
+- #### Create a Docker image
+```
+docker build -t book-shop .
+``` 
+- #### Builds all images
+```
+docker-compose build
+``` 
+- #### Start the docker container
+```
+docker-compose up
+``` 
+
+> 🎯 Then you can use all the endpoints specified in the examples above.
+
 # 👨‍💻 Project outcomes
 
 >It was very interesting to deal with the pet project and technologies for the first time, although it was not easy to understand everything at once.
