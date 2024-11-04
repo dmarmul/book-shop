@@ -22,169 +22,15 @@ taught me how to use liquibase and Docker and how to write tests for different a
 # ⬇ Tech stack used to create the application ⬇
 ![Using Technologies](image/usingTechnologies.png)
 
-> Examples of endpoint queries are shown below.
-> Swagger was used for the examples.
+# 🔧 Collection of requests for Postman
+<a href='https://pet-project-2717.postman.co/workspace/pet-project-Workspace~688a855e-fd66-4695-8f92-7590fec60cfa/collection/26742545-31c90dbb-7278-4f32-96ea-2d3072e1fb48?action=share&creator=26742545'>
+<img src='https://img.shields.io/badge/Postman-orange?style=for-the-badge'>
+</a>
 
-## 🔹 User management
-<details>
-<summary></summary>
-<details>
-<summary>
-🔹 User registration endpoint
-</summary>
-  <img src='image/user/registerRequest.png'/>
-  <img src='image/user/registerResponse.png'/>
-</details>
-<details>
-<summary>
-🔹 User login endpoint
-</summary>
-  <img src='image/user/loginUser.png'/>
-</details>
-</details>
-
-## 🔹 Categories management
-<details>
-<summary></summary>
-<details>
-<summary>
-🔹 Add new category
-</summary>
-  <img src='image/category/addCategory.png'/>
-</details>
-<details>
-<summary>
-🔹 Get all categories
-</summary>
-  <img src='image/category/getAllCategories.png'/>
-</details>
-<details>
-<summary>
-🔹 Get category by its id
-</summary>
-  <img src='image/category/getCategoryById.png'/>
-</details>
-<details>
-<summary>
-🔹 Get books by category id
-</summary>
-  <img src='image/category/getBooksByCategoryId.png'/>
-</details>
-<details>
-<summary>
-🔹 Update category
-</summary>
-  <img src='image/category/updateCategoryById.png'/>
-</details>
-<details>
-<summary>
-🔹 Delete category
-</summary>
-  <img src='image/category/deleteCategory.png'/>
-</details>
-</details>
-
-## 🔹 Books management
-<details>
-<summary></summary>
-<details>
-<summary>
-🔹 Add new book
-</summary>
-  <img src='image/book/addBookRequest.png'/>
-  <img src='image/book/addBookResponse.png'/>
-</details>
-<details>
-<summary>
-🔹 Get all books
-</summary>
-  <img src='image/book/getBooks.png'/>
-</details>
-<details>
-<summary>
-🔹 Get book by its id
-</summary>
-  <img src='image/book/getBookById.png'/>
-</details>
-<details>
-<summary>
-🔹 Update book
-</summary>
-  <img src='image/book/updateBookRequest.png'/>
-  <img src='image/book/updateBookResponse.png'/>
-</details>
-<details>
-<summary>
-🔹 Delete book
-</summary>
-  <img src='image/book/deleteBookBuId.png'/>
-</details>
-</details>
-
-## 🔹 Shopping cart management
-<details>
-<summary></summary>
-<details>
-<summary>
-🔹 Add book to cart
-</summary>
-  <img src='image/cart/addBookToShoppingCart.png'/>
-</details>
-<details>
-<summary>
-🔹 Get all cart items
-</summary>
-  <img src='image/cart/getCartItems.png'/>
-</details>
-<details>
-<summary>
-🔹 Update number of books in shopping cart
-</summary>
-  <img src='image/cart/updateNumberOfBooks.png'/>
-</details>
-<details>
-<summary>
-🔹 Delete book from cart
-</summary>
-  <img src='image/cart/deleteBookFromCart.png'/>
-</details>
-</details>
-
-## 🔹 Order management
-<details>
-<summary></summary>
-<details>
-<summary>
-🔹 Place order
-</summary>
-  <img src='image/order/placeOrder.png'/>
-</details>
-<details>
-<summary>
-🔹 Get orders history
-</summary>
-  <img src='image/order/ordersHistory1.png'/>
-  <img src='image/order/ordersHistory2.png'/>
-</details>
-<details>
-<summary>
-🔹 Get order items
-</summary>
-  <img src='image/order/getOrderItems.png'/>
-</details>
-<details>
-<summary>
-🔹 Get order item by id
-</summary>
-  <img src='image/order/getOrderItemById.png'/>
-</details>
-<details>
-<summary>
-🔹 Update order status
-</summary>
-  <img src='image/order/updateOrderSatus.png'/>
-</details>
-</details>
+# 🌐 Deployed app to the AWS
+<a href='http://ec2-13-49-49-233.eu-north-1.compute.amazonaws.com/swagger-ui/index.html#/'>
+<img src='https://img.shields.io/badge/AWS-purple?style=for-the-badge'>
+</a>
 
 # 💻 Required technologies to get up and running the project
 - #### JDK 17(or higher)
@@ -252,7 +98,7 @@ It also gave me more motivation to get a better understanding of development tec
 
 ---
 
-# 👨‍🎓🌐
+# 👨‍🎓
 
 Thank you for taking the time to review this project. 
 If you are interested in cooperation or want to know more about the project, 
